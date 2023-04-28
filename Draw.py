@@ -38,7 +38,7 @@ class Draw:
                                    hoverColour=(150, 0, 0),  # Colour of button when being hovered over
                                    pressedColour=(0, 200, 20),  # Colour of button when being clicked
                                    radius=20,  # Radius of border corners (leave empty for not curved)
-                                   onClick=lambda: self.im.save(main=False)  # Function to call when clicked on
+                                   onClick=lambda: self.im.save(final_save=False)  # Function to call when clicked on
                                    )
             self.screen.fill(self.BACKGROUND)
 
@@ -66,7 +66,7 @@ class Draw:
                                hoverColour=(150, 0, 0),  # Colour of button when being hovered over
                                pressedColour=(0, 200, 20),  # Colour of button when being clicked
                                radius=20,  # Radius of border corners (leave empty for not curved)
-                               onClick=lambda: self.im.save(main=False)  # Function to call when clicked on
+                               onClick=lambda: self.im.save(final_save=False)  # Function to call when clicked on
                                )
 
     def DrawWindow(self, x0, y0, x, y, colour=(255, 127, 0)):
@@ -82,8 +82,8 @@ class Draw:
             pg.display.update()
             pygame_widgets.update(pg.event.get())
 
-    def save(self, name=None, main=False):
+    def save(self, name=None, final_save=False):
         if name is None:
             name = self.name
         if self.SAVE_IMAGE:
-            self.im.save(name=name, main=main)
+            self.im.save(name=name, final_save=final_save)

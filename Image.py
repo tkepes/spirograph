@@ -24,16 +24,16 @@ class MyImage:
         colour = tuple(colour)
         self.draw.line((x, y, x0, y0), fill=colour, width=width)  # self.line_width)
 
-    def save(self, name=None, main=False):  # name = parameters_string()
+    def save(self, name=None, final_save=False):  # name = parameters_string()
         # self.PATH.reset()
         if name is None:
             name = self.name
         self.stage += 1
-        if not main and len(self.PATH) == 17:
+        if not final_save and len(self.PATH) == 17:
             path = self.PATH.instant() + ' - ' + name
             self.PATH.update(path)
         a = len(str(self.stage))
-        if main:
+        if final_save:
             self.im.save(self.PATH + '/' + (('000'[:3 - a] + str(self.stage) + ' ') if self.stage > 1 else '') +
                          self.PATH.instant() + (' ' + name if self.stage == 1 else '') + '.png')
         else:

@@ -98,7 +98,7 @@ def main():
         draw.DrawWindow(x0, y0, x, y, colour=colour)
         pygame_widgets.update(events)
     pg.quit()
-    draw.save(name=parameters_string(spiro), main=True)
+    draw.save(name=parameters_string(spiro), final_save=True)
 
 
 if __name__ == '__main__':
