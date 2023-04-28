@@ -1,9 +1,7 @@
 import pygame as pg
-from PIL import Image, ImageDraw
 from pygame_widgets.button import Button
 import pygame_widgets
 from pygame.locals import *
-import numpy as np
 from Image import MyImage
 
 
@@ -25,7 +23,7 @@ class Draw:
             self.DISPLAY_HEIGHT = DISPLAY_HEIGHT
             pg.init()
             pg.font.init()
-            self.display_ratio()
+            self.update_display_ratio()
             self.screen = pg.display.set_mode((round(self.w_ratio * self.width), round(self.h_ratio * self.height)),
                                               RESIZABLE)
             if self.SAVE_IMAGE:
@@ -42,7 +40,7 @@ class Draw:
                                    )
             self.screen.fill(self.BACKGROUND)
 
-    def display_ratio(self):
+    def update_display_ratio(self):
         self.w_ratio = self.DISPLAY_WIDTH / self.width
         self.h_ratio = self.DISPLAY_HEIGHT / self.height
         self.resize_ratio = min(self.w_ratio, self.h_ratio)
@@ -50,7 +48,7 @@ class Draw:
     def resized(self):
         self.DISPLAY_WIDTH = self.screen.get_width()
         self.DISPLAY_HEIGHT = self.screen.get_height()
-        self.display_ratio()
+        self.update_display_ratio()
         if self.SAVE_IMAGE:
             self.SAVE.hide()
             # self.SAVE.disable()
@@ -69,7 +67,7 @@ class Draw:
                                onClick=lambda: self.im.save(final_save=False)  # Function to call when clicked on
                                )
 
-    def DrawWindow(self, x0, y0, x, y, colour=(255, 127, 0)):
+    def draw_window(self, x0, y0, x, y, colour=(255, 127, 0)):
         if self.SAVE_IMAGE:
             self.im.line(x0, y0, x, y, colour=colour)
         if self.DISPLAY:

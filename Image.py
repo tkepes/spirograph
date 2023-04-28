@@ -1,6 +1,5 @@
 from PIL import Image, ImageDraw
 from Path import Path
-import numpy as np
 
 
 class MyImage:
@@ -20,8 +19,7 @@ class MyImage:
             colour = self.BACKGROUND
         self.draw.rectangle([(0, 0), (self.width, self.height)], fill=colour, outline=colour, width=2)
 
-    def line(self, x0, y0, x, y, colour=np.array([255, 128, 0]), width=2):
-        colour = tuple(colour)
+    def line(self, x0, y0, x, y, colour=(255, 127, 0), width=2):
         self.draw.line((x, y, x0, y0), fill=colour, width=width)  # self.line_width)
 
     def save(self, name=None, final_save=False):  # name = parameters_string()

@@ -95,7 +95,7 @@ def main():
         POINTS += [(x, y)]
         colour = GetColour(spiro)
         COLOURS += [colour]
-        draw.DrawWindow(x0, y0, x, y, colour=colour)
+        draw.draw_window(x0, y0, x, y, colour=colour)
         pygame_widgets.update(events)
     pg.quit()
     draw.save(name=parameters_string(spiro), final_save=True)
