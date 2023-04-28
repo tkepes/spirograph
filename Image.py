@@ -4,7 +4,7 @@ import numpy as np
 
 
 class MyImage:
-    def __init__(self, width=1000, height=1000, mode='RGB', BACKGROUND=(0, 0, 0), LINE_WIDTH=2):
+    def __init__(self, width=1000, height=1000, mode='RGB', BACKGROUND=(0, 0, 0), LINE_WIDTH=2, name=None):
         self.PATH = Path('Images/')
         self.width = width
         self.height = height
@@ -13,6 +13,7 @@ class MyImage:
         self.BACKGROUND = BACKGROUND
         self.stage = 0
         self.line_width = LINE_WIDTH
+        self.name = name
 
     def fill(self, colour=None):
         if colour is None:
@@ -23,8 +24,10 @@ class MyImage:
         colour = tuple(colour)
         self.draw.line((x, y, x0, y0), fill=colour, width=width)  # self.line_width)
 
-    def save(self, name='', main=False):  # name = parameters_string()
-        self.PATH.reset()
+    def save(self, name=None, main=False):  # name = parameters_string()
+        # self.PATH.reset()
+        if name is None:
+            name = self.name
         self.stage += 1
         if not main and len(self.PATH) == 17:
             path = self.PATH.instant() + ' - ' + name

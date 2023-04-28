@@ -60,7 +60,8 @@ def main():
     pg.init()
     pg.font.init()
     spiro = Spirograph(width=WIDTH, height=HEIGHT, ADAPTIVE_RATE=ADAPTIVE_RATE)
-    draw = Draw(width=WIDTH, height=HEIGHT, DISPLAY=True, SAVE_IMAGE=True, BACKGROUND=BACKGROUND, LINE_WIDTH=2)
+    draw = Draw(width=WIDTH, height=HEIGHT, DISPLAY=True, SAVE_IMAGE=True, BACKGROUND=BACKGROUND, LINE_WIDTH=2,
+                name=parameters_string(spiro))
     # DYNAMIC_COLOURING=True, MY_COLOUR_SCHEME=True, BIPOLAR_COLOUR_SCHEME=False,
     x, y = spiro.update()
     global POINTS, COLOURS
@@ -73,10 +74,22 @@ def main():
         for event in events:
             if event.type == pg.QUIT:
                 run = False
+            elif event.type == WINDOWRESIZED:
+                draw.resized()
             elif event.type == VIDEORESIZE:
-                # screen.blit(pg.transform.scale(pic, event.dict['size']), (0, 0))
+                # draw.screen.blit(pg.transform.scale(pic, event.dict['size']), (0, 0))
+                # i = 1
+                # while i < len(POINTS):
+                #     pg.draw.line(draw.screen, COLOURS[i - 1], POINTS[i-1], POINTS[i], width=LINE_WIDTH)
+                #     pg.display.update()
+                # pg.display.update()
+                pass
+            elif event.type == VIDEOEXPOSE:  # handles window minimising/maximising
+                # screen.fill((0, 0, 0))
+                # screen.blit(pygame.transform.scale(pic, screen.get_size()), (0, 0))
+                # pygame.display.update()
+                pass
 
-                pg.display.update()
         x0, y0 = x, y
         x, y = spiro.update()
         POINTS += [(x, y)]
