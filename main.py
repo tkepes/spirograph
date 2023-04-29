@@ -49,7 +49,7 @@ def GetColour(spirog, colour=np.array([255, 127, 0])):
     if DYNAMIC_SHADING:
         dx, dy = spirog.get_derivatives()
         d = (dx ** 2 + dy ** 2) ** 0.5
-        d = (d / max([d, spirog.maxslope * 0.9])) ** 1
+        d = (d / max([d, spirog.max_slope * 0.9])) ** 1
         # print(d)
         strength = 0.6
         colour = np.round(strength * (1 / strength - (1 - d)) * colour).astype(int)
