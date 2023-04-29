@@ -10,8 +10,8 @@ from utils import parameters_string, normalise
 FPS = 100
 WIDTH, HEIGHT = 2000, 2000
 LINE_WIDTH = 2
-DYNAMIC_COLOURING = True
-MY_COLOUR_SCHEME = True
+DYNAMIC_SHADING = True
+MY_COLOUR_SCHEME = False
 BIPOLAR_COLOUR_SCHEME = False
 ADAPTIVE_RATE = True
 BACKGROUND = (0, 0, 0)  # (31, 0, 10)  # (127, 0, 31)
@@ -46,10 +46,10 @@ def GetColour(spirog, colour=np.array([255, 127, 0])):
         colour = (n1 * col1 + n2 * col2) / (max(n1 + n2, 1))
         # colour -= np.min(colour)
         colour = np.round(np.maximum(np.minimum(colour, 255), 0)).astype(int)
-    if DYNAMIC_COLOURING:
+    if DYNAMIC_SHADING:
         dx, dy = spirog.get_derivatives()
-        d = np.sqrt(dx ** 2 + dy ** 2)
-        d = np.power(d / max([d, spirog.maxslope * 0.9]), 1)
+        d = (dx ** 2 + dy ** 2) ** 0.5
+        d = (d / max([d, spirog.maxslope * 0.9])) ** 1
         # print(d)
         strength = 0.6
         colour = np.round(strength * (1 / strength - (1 - d)) * colour).astype(int)
@@ -59,10 +59,17 @@ def GetColour(spirog, colour=np.array([255, 127, 0])):
 def main():
     pg.init()
     pg.font.init()
+    """R(t)(x(t), y(t))"""
+    base_curve = {"""(x0(t), y0(t)) = (A cos(at + b), B sin(ct + d))"""
+                  'A': 1, 'a': 1, 'b': 0, 'B': 1, 'c': 1, 'd': 0}
+    ribbon_curve = {"""(x(t), y(t)) = (x0(t), y0(t)) + r/R(A cos(a speed t + b), B sin(c speed t + d))"""
+                  'R/r': 10, 'speed': 20.05, 'A': 1, 'a': 1, 'b': 0, 'B': 1, 'c': 1, 'd': 0}
+    radius_curve = {"""R(t) = R((1 - C)sin(qt + b) + C)"""
+                  'C': 0.85, 'q': 20, 'b': 0}
     spiro = Spirograph(width=WIDTH, height=HEIGHT, ADAPTIVE_RATE=ADAPTIVE_RATE)
     draw = Draw(width=WIDTH, height=HEIGHT, DISPLAY=True, SAVE_IMAGE=True, BACKGROUND=BACKGROUND, LINE_WIDTH=2,
                 name=parameters_string(spiro))
-    # DYNAMIC_COLOURING=True, MY_COLOUR_SCHEME=True, BIPOLAR_COLOUR_SCHEME=False,
+    # DYNAMIC_SHADING=True, MY_COLOUR_SCHEME=True, BIPOLAR_COLOUR_SCHEME=False,
     x, y = spiro.update()
     global POINTS, COLOURS
     POINTS += [(x, y)]

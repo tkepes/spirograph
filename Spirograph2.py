@@ -1,8 +1,19 @@
 import numpy as np
-from utils import least_multiple_of, get_period
+import sympy as sp
 
-sin = lambda t, a=1, b=0: np.sin(a * t + b)
-cos = lambda t, a=1, b=0: np.cos(a * t + b)
+sin = lambda t, a=1, b=0: sp.sin(a * t + b)
+cos = lambda t, a=1, b=0: sp.cos(a * t + b)
+t = sp.symbols('t')
+
+
+def euclidean(a, b):
+    while a % b != 0:
+        a, b = b, a % b
+    return b
+
+
+def base_curve():
+    pass
 
 
 class Spirograph:
@@ -15,8 +26,8 @@ class Spirograph:
         self.a, self.b, self.c, self.d = a, b, c, d
         self.Tc, self.tc, self.Ts, self.ts = Tc, tc, Ts, ts
 
-        sin = lambda t, a=1, b=0: np.sin(a * t + b)
-        cos = lambda t, a=1, b=0: np.cos(a * t + b)
+        sin = lambda t, a=1, b=0: sp.sin(a * t + b)
+        cos = lambda t, a=1, b=0: sp.cos(a * t + b)
         dsin = lambda t, a=1, b=0: a * cos(t, a, b)
         dcos = lambda t, a=1, b=0: -a * sin(t, a, b)
         x_keys = ['COS', 'cos']
@@ -27,7 +38,7 @@ class Spirograph:
         rad_keys = ['R', 'r']
 
         self.r0 = 1 * self.width // 32  # 100
-        self.R0 = min(self.width, self.height) // (2 * np.sqrt(max(self.A, self.C))) - 120 - self.r0
+        self.R0 = min(self.width, self.height) // (2 * sp.sqrt(max(self.A, self.C))) - 120 - self.r0
 
         # self.x = self.width // 2 + self.R0 + self.r0
         # self.y = self.height // 2
@@ -49,11 +60,11 @@ class Spirograph:
         self.dy = lambda t: sum([func[rad[f]](t) * ce[f] * dfunc[f](t, a=fact[f], b=shift[f]) +
                                  dfunc[rad[f]](t) * ce[f] * dfunc[f](t, a=fact[f], b=shift[f]) for f in x_keys])
         # self.A = 2
-        # self.a = 4
-        # self.c = 3
-        # self.Tc = np.pi / 2
+        self.a = 4
+        self.c = 3
+        self.Tc = sp.pi / 2
         self.r0 = 1 * self.width // 32  # 100
-        self.R0 = min(self.width, self.height) // (2 * np.sqrt(max(self.A, self.C))) - 120 - self.r0
+        self.R0 = min(self.width, self.height) // (2 * sp.sqrt(max(self.A, self.C))) - 120 - self.r0
 
         # self.x = self.width // 2 + self.R0 + self.r0
         # self.y = self.height // 2
@@ -72,6 +83,13 @@ class Spirograph:
                            self.B * self.r(t) * cos(t, a=self.b * self.speed, b=self.tc) + \
                            self.r2(t) * cos(t, a=self.b * self.speed ** 4) + k * self.r0 * (
                                    0 * sin(t, a=12) + cos(t, a=12))
+        t = sp.symbols('t')
+        # print(self.R0)
+        # print(self.r0)
+        # print(self.R(t))
+        # print(self.r(t))
+        print(self.x(t))
+        print(sp.diff(self.x(t)))
         self.dx = lambda t: self.A * (self.dR(t) * cos(t, a=self.a, b=self.Tc) +
                                       self.R(t) * dcos(t, a=self.a, b=self.Tc)) + \
                             self.B * (self.dr(t) * cos(t, a=self.b * self.speed, b=self.tc) +
@@ -113,13 +131,33 @@ class Spirograph:
         self.rate = 3 * min(0.08 / self.speed, 0.06)
 
         # self.x, self.y = self.update()
+        def get_period(*nums):
+            nums = list(nums)
+            while len(nums) > 1:
+                j = len(nums) - 1
+                while j > 0:
+                    a, b = str(nums[j]), str(nums[j - 1])
+                    t = 0
+                    n2 = [a, b]
+                    for c in n2:
+                        if '.' in c:
+                            t = max(t, len(c[c.index('.') + 1:]))
+                    if t > 0:
+                        for i in range(2):
+                            if '.' not in n2[i]:
+                                n2[i] = n2[i] + '0' * t
+                            else:
+                                n2[i] = n2[i].replace('.', '') + '0' * (t - len(n2[i][n2[i].index('.') + 1:]))
+                    a, b = int(n2[0]), int(n2[1])
 
-        self.per = np.abs(least_multiple_of(max(self.q, 1), self.a, self.b * self.speed, self.c, self.d * self.speed))
-        if self.per != np.abs(get_period(max(self.q, 1), self.a, self.b * self.speed, self.c, self.d * self.speed)):
-            print(self.per,
-                  np.abs(get_period(max(self.q, 1), self.a, self.b * self.speed, self.c, self.d * self.speed)))
-            print(self.q, self.a, self.b * self.speed, self.c, self.d * self.speed)
-        # print(self.per)
+                    c = a * b // euclidean(a, b) // 10 ** t
+                    nums = nums[:j - 1] + [c] + nums[j + 1:]
+                    j -= 2
+            return nums[0]
+
+        self.per = np.abs(get_period(max(self.q, 1), self.a, self.b * self.speed, self.c, self.d * self.speed))
+        print(self.q, self.a, self.b * self.speed, self.c, self.d * self.speed)
+        print(self.per)
         if self.per > 10 ** 3:
             m = round(max(self.q, self.a, self.b * self.speed, self.c, self.d * self.speed))
             T = np.linspace(0, m, 10 * m + 1)
@@ -133,32 +171,14 @@ class Spirograph:
         m = (min(self.width, self.height) // 2 - 120) / max_
         self.R0 *= m
         self.r0 *= m
-        dF = [(round(self.dx(t)), round(self.dy(t))) for t in T]  # np.linnpace(0, self.per, 10 * self.per + 1)]
-        D = [np.sqrt(dx ** 2 + dy ** 2) for dx, dy in dF]
+        dF = [(round(self.dx(t)), round(self.dy(t))) for t in T]  # np.linspace(0, self.per, 10 * self.per + 1)]
+        D = [sp.sqrt(dx ** 2 + dy ** 2) for dx, dy in dF]
         self.maxslope = float(max(D))
-        self.avslope = sum(D) / len(D)  # np.average(D)
+        self.avslope = sum(D) / len(D)  # .average(D)
         print(round(self.maxslope, 2), round(self.avslope, 2))
 
     def coordinate_functions(self, cos_fact, cos_const, sin_fact, sin_const):
         return lambda t: np.cos(cos_fact * t + cos_const), lambda t: np.sin(sin_fact * t + sin_const)
-
-    # def base_curve(self, name='(cos(t); sin(t))'):
-    #     """
-    #     r(A*cos(a*t + b), B*sin(c*t+d))
-    #     """
-    #     r = 1
-    #     if name.index('(') != 0:
-    #         r = int(name[:name.index('(')])
-    #     name = name[name.index('(') + 1:name.index(')')]
-    #     x_name, y_name = name[:name.index(';')], name[name.index(';') + 1:]
-    #     func = 'cos'
-    #     if func not in x_name:
-    #         func = 'sin'
-    #     A = 1
-    #     if x_name.index(func) != 0
-    #         pass
-    #     x = y = 0
-    #     return x, y
 
     def update(self):
         # self.x = self.width // 2 + self.A * self.R0 * (0.5 * np.sin(3 * self.t) + 0.5) * np.cos(
@@ -167,7 +187,7 @@ class Spirograph:
         #     self.c * self.t + self.Ts) - self.D * self.r0 * np.sin(self.d * self.speed * self.t + self.ts)
         # np.sin(self.speed * self.t)
         if self.ADAPTIVE_RATE:
-            delta = (np.sqrt(self.dx(self.t) ** 2 + self.dy(self.t) ** 2) / self.maxslope)
+            delta = (sp.sqrt(self.dx(self.t) ** 2 + self.dy(self.t) ** 2) / self.maxslope)
             delta = (delta ** 0.05) / 100  # 100
             # print(round(delta, 3))
             self.t += delta
