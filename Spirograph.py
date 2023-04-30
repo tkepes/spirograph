@@ -13,7 +13,7 @@ def get_max(f, g, a, b):
 
 class Spirograph:
     def __init__(self, width=2000, height=2000, ADAPTIVE_RATE=True, base_curve=None, ribbon_curve=None,
-                 radius_curve=None, SIN_OR_MIN_RAD=True, **kwargs):
+                 radius_curve=None, rad_type='sin', ORTHOGONAL_WAVES=False, **kwargs):
         self.width = width
         self.height = height
         self.ADAPTIVE_RATE = ADAPTIVE_RATE
@@ -43,22 +43,44 @@ class Spirograph:
         # self.R = lambda t: radius_curve['R'] * \
         #                    ((1 - radius_curve['C']) * sin(t, a=radius_curve['q'], b=radius_curve['b']) + radius_curve[
         #                        'C'])
-        if SIN_OR_MIN_RAD:
+        if rad_type == 'sin':
+            self.R = lambda t, C=radius_curve['C'], q=radius_curve['q'], b=radius_curve['b']: self.R0 * (
+                    (1 - C) * 4 * (min((q * t / np.pi / 2 + b) % 1, (-(q * t / np.pi / 2 + b)) % 1) - 1 / 4) + C)
+            self.dR = lambda t, C=radius_curve['C'], q=radius_curve['q'], b=radius_curve['b']: -self.R0 * (
+                    (1 - C) * 2 * q / np.pi * np.sign((q * t / np.pi / 2 + b) % 1 - 1 / 2))
+        elif rad_type == 'min':  # if rad_type == 'sin':
             self.R = lambda t, C=radius_curve['C'], q=radius_curve['q'], b=radius_curve['b']: \
                 self.R0 * ((1 - C) * sin(t, a=q, b=b) + C)
             self.dR = lambda t, C=radius_curve['C'], q=radius_curve['q'], b=radius_curve['b']: \
                 self.R0 * (1 - C) * dsin(t, a=q, b=b)
         else:
-            self.R = lambda t, C=radius_curve['C'], q=radius_curve['q'], b=radius_curve['b']: self.R0 * (
-                    (1 - C) * 4 * (min((q * t / np.pi / 2 + b) % 1, (-(q * t / np.pi / 2 + b)) % 1) - 1 / 4) + C)
-            self.dR = lambda t, C=radius_curve['C'], q=radius_curve['q'], b=radius_curve['b']: -self.R0 * (
-                    (1 - C) * 2 * q / np.pi * np.sign((q * t / np.pi / 2 + b) % 1 - 1 / 2))
-        self.x = lambda t, scale=r_scale: self.width // 2 + self.R(t) * (self.x0(t) + 1 / scale * self.x1(t))
-        self.y = lambda t, scale=r_scale: self.height // 2 + self.R(t) * (self.y0(t) + 1 / scale * self.y1(t))
+            self.R = lambda t: self.R0
+            self.dR = lambda t: 0
+        if ORTHOGONAL_WAVES:
+            self.d2x0 = lambda t, A=base_curve['A'], a=base_curve['a'], b=base_curve['b']: -A * a ** 2 * cos(t, a=a,
+                                                                                                             b=b)
+            self.d2y0 = lambda t, B=base_curve['B'], c=base_curve['c'], d=base_curve['d']: -B * c ** 2 * sin(t, a=c,
+                                                                                                             b=d)
+            self.x2 = lambda t, C=radius_curve['C'], q=radius_curve['q'], b=radius_curve['b']: self.R0 / 3 * (1 - C) * \
+                                                                                               self.dy0(t) * cos(t, a=q)
+            self.y2 = lambda t, C=radius_curve['C'], q=radius_curve['q'], b=radius_curve['b']: -self.R0/ 3 * (1 - C) * \
+                                                                                               self.dx0(t) * cos(t, a=q)
+            self.dx2 = lambda t, C=radius_curve['C'], q=radius_curve['q'], b=radius_curve['b']: self.R0/ 3 * (1 - C) * \
+                                                                           (self.d2y0(t) * cos(t, a=q) +
+                                                                            self.dy0(t) * dcos(t, a=q))
+            self.dy2 = lambda t, C=radius_curve['C'], q=radius_curve['q'], b=radius_curve['b']: -self.R0/ 3 * (1 - C) * \
+                                                                           (self.d2x0(t) * cos(t, a=q) +
+                                                                            self.dx0(t) * dcos(t, a=q))
+        self.x = lambda t, scale=r_scale: self.width // 2 + self.R(t) * (self.x0(t) + 1 / scale * self.x1(t)) + \
+                                          (self.x2(t) if ORTHOGONAL_WAVES else 0)
+        self.y = lambda t, scale=r_scale: self.height // 2 + self.R(t) * (self.y0(t) + 1 / scale * self.y1(t)) + \
+                                          (self.y2(t) if ORTHOGONAL_WAVES else 0)
         self.dx = lambda t, scale=r_scale: self.dR(t) * (self.x0(t) + 1 / scale * self.x1(t)) + \
-                                           self.R(t) * (self.dx0(t) + 1 / scale * self.dx1(t))
+                                           self.R(t) * (self.dx0(t) + 1 / scale * self.dx1(t)) + \
+                                           (self.dx2(t) if ORTHOGONAL_WAVES else 0)
         self.dy = lambda t, scale=r_scale: self.dR(t) * (self.y0(t) + 1 / scale * self.y1(t)) + \
-                                           self.R(t) * (self.dy0(t) + 1 / scale * self.dy1(t))
+                                           self.R(t) * (self.dy0(t) + 1 / scale * self.dy1(t)) + \
+                                           (self.dy2(t) if ORTHOGONAL_WAVES else 0)
 
         self.phi = lambda t: np.sign(self.dy(t)) * np.arccos(self.dx(t) / np.sqrt(self.dx(t) ** 2 + self.dy(t) ** 2))
         # self.x1 = lambda t: self.x(t) +
@@ -76,7 +98,7 @@ class Spirograph:
             print(self.per, np.abs(
                 get_period(max(radius_curve['q'], 1), base_curve['a'], ribbon_curve['a'] * speed, base_curve['c'],
                            ribbon_curve['c'] * speed)))
-            print(nums)
+        print(nums)
 
         self.max_slope, self.av_slope, T = get_max(self.dx, self.dy, 0, self.per)
         print(round(self.max_slope, 2), round(self.av_slope, 2))
@@ -85,7 +107,7 @@ class Spirograph:
         ymax = max([self.y(t) for t in T])
         ymin = max([self.y(t) for t in T])
         M = max(xmax - self.width // 2, ymax - self.height // 2, self.width // 2 - xmin, self.height // 2 - ymin)
-        rescale_factor = (min(self.width, self.height) // 2 - 120) / M
+        rescale_factor = (min(self.width, self.height) // 2 - 50) / M
         self.R0 *= rescale_factor
         self.r0 *= rescale_factor
         self.max_base_slope, self.av_base_slope, _ = get_max(self.dx0, self.dy0, 0,
@@ -106,7 +128,7 @@ class Spirograph:
             self.t += delta
         else:
             self.t += self.rate
-        return float(self.x(self.t)), float(self.y(self.t))
+        return self.x(self.t), self.y(self.t)
 
     def get_derivatives(self, type=''):
         # dx = -self.a * self.A * self.R0 * np.sin(self.a * self.t + self.Tc) - \

@@ -25,14 +25,14 @@ COLOURS = []
     and (x1(t), y1(t)) = (A_1 cos(a_1t + b_1), B_1 sin(c_1t + d_1))
     and R(t) = R((1 - C)sin(qt + b) + C)
 """
-q = 8  # 20
+q = 20  # 20
 C = 0.75  # 0.85
-speed = 7.12 # 20.05
+speed = 30.05  # 7.12  # 20.05
 base_a = 1  # 4
 base_b = 0  # np.pi / 2
-base_c = 1  # 3
+base_c = 2  # 3
 rad_ratio = 8
-base_A = 1
+base_A = 2
 base_curve = {'A': base_A, 'a': base_a, 'b': base_b, 'B': 1, 'c': base_c, 'd': 0}
 ribbon_curve = {'R:r': rad_ratio, 'speed': speed, 'A': 1, 'a': 1, 'b': 0, 'B': 1, 'c': 1, 'd': 0}
 radius_curve = {'C': C, 'q': q, 'b': 0}
@@ -43,8 +43,8 @@ params = {((curve_codes[i] + '_') if key in 'ABabcd' else '') + key: curves[i][k
 
 
 def parameters_string():
-    st = 'R div r = {:.2f}, q = {}, speed = {:.2f}'.format(ribbon_curve['R:r'], radius_curve['q'],
-                                                           ribbon_curve['speed'])
+    st = ('R div r = {' + (':.2f' if '.' in str(ribbon_curve['R:r']) else '') +
+          '}, q = {}, speed = {:.2f}').format(ribbon_curve['R:r'], radius_curve['q'], ribbon_curve['speed'])
     args = [params['base_A'], params['ribbon_A'], params['base_B'], params['ribbon_B'],
             params['base_a'], params['ribbon_a'], params['base_c'], params['ribbon_c'],
             params['base_b'], params['ribbon_b'], params['base_d'], params['ribbon_d']]
@@ -99,7 +99,7 @@ def main():
     pg.font.init()
     global base_curve, ribbon_curve, radius_curve
     spiro = Spirograph(width=WIDTH, height=HEIGHT, ADAPTIVE_RATE=ADAPTIVE_RATE, base_curve=base_curve,
-                       ribbon_curve=ribbon_curve, radius_curve=radius_curve, SIN_OR_MIN_RAD=True)
+                       ribbon_curve=ribbon_curve, radius_curve=radius_curve, rad_type='', ORTHOGONAL_WAVES=True)
     draw = Draw(width=WIDTH, height=HEIGHT, DISPLAY=True, SAVE_IMAGE=True, BACKGROUND=BACKGROUND, LINE_WIDTH=2,
                 name=parameters_string())
     # DYNAMIC_SHADING=True, MY_COLOUR_SCHEME=True, BIPOLAR_COLOUR_SCHEME=False,
