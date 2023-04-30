@@ -118,11 +118,12 @@ def main():
                 draw.resized()
             elif event.type == VIDEORESIZE:
                 # draw.screen.blit(pg.transform.scale(pic, event.dict['size']), (0, 0))
-                # i = 1
-                # while i < len(POINTS):
-                #     pg.draw.line(draw.screen, COLOURS[i - 1], POINTS[i-1], POINTS[i], width=LINE_WIDTH)
-                #     pg.display.update()
-                # pg.display.update()
+                i = 1
+                draw.screen.fill(BACKGROUND)
+                while i < len(POINTS):
+                    pg.draw.line(draw.screen, COLOURS[i - 1], POINTS[i - 1], POINTS[i], width=LINE_WIDTH)
+                    i += 1
+                pg.display.update()
                 pass
             elif event.type == VIDEOEXPOSE:  # handles window minimising/maximising
                 # screen.fill((0, 0, 0))

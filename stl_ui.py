@@ -41,6 +41,12 @@ curve_codes = ['base', 'ribbon', 'radius']
 params = {((curve_codes[i] + '_') if key in 'ABabcd' else '') + key: curves[i][key] for i in range(len(curve_codes)) for
           key in curves[i].keys()}
 
+for i in range(len(curves)):
+    curve = curves[i]
+    for param in curve:
+        print(param)
+        curve[param] = st.sidebar.slider(((curve_codes[i] + '_') if param in 'ABabcd' else '') + param , value=curve[param])
+
 
 def parameters_string():
     st = ('R div r = {' + (':.2f' if '.' in str(ribbon_curve['R:r']) else '') +
