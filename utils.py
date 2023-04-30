@@ -23,7 +23,6 @@ def least_multiple(a, b):
 
 def least_multiple_of(*nums):
     nums = list(nums)
-    print(nums)
     for i in range(len(nums)):
         nums[i] = smallest_int_multiple(nums[i])
     while len(nums) > 1:
