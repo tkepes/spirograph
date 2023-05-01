@@ -1,0 +1,64 @@
+the whole class of curves that this program is able to display can be decomposed into three components:
+    the base curve,
+    a spirograph-like curling component which results in a ribbon-like band in place of the sole line of the base curve
+    and a radius curve which adds big waves to the now band-like line of the curve
+t will denote the measure of rotation vs time
+Let's take a closer look:
+    (B) the base curve (lissajous or some other type): (b_x(t), b_y(t)) e.g. (cos(t), sin(t)), or (2cos(t), sin(2t)), etc,
+    (C) the curls: (c_x(t), c_y(t)) e.g. (cos(s*t), sin(s*t)) where s expresses the difference in the rotational speeds
+        of the base curve and the curls-curve,
+    (R) the radius curve is either a factor of the linear combination of the other two:
+      R(t) = R_0 (C r(q t) + 1 - C) where c in [0, 1] expresses the strength of the waving effect, i.e. when C = 0,
+        R(t) is simply R_0. E.g. r(q t + b) = sin(q t + b) or r(t) = 4 min((q t + b) % 1, (-(q t + b)) % 1) - 1,
+        here q + 1 will amount to the number of larger waves along the base curve
+      or alternatively the radius curve can be expressed as dynamic shift which is added onto the curve:
+      R_2(t) = (r_x(t), r_y(t)), e.g. (r_x(t), r_y(t)) = C r(q t + b) (db_y(t + d), -db_x(t + d))
+        which adjust the waves exactly to the curvature of the base curve (r(t) as in the previous case)
+thus the whole curve can be written as R(t, x(t), y(t)), based on type of the radius R(t, x(t), y(t)) = R(t)(x(t), y(t))
+or R(t, x(t), y(t)) = (R_0 x(t) + r_x(t), R_0 y(t) + r_y(t)),
+    x(t) = b_x(t) + (r_0:R_0)c_x(t), y(t) = b_x(t) + (r_0:R_0)c_x(t) where r_0 is the radius of the curls-curve,
+    (b_x(t), b_y(t)) = (A_b cos(a_b t + b_b), B_b sin(c_b t + d_b)),
+    (c_x(t), c_y(t)) = (A_c cos(a_c t + b_c), B_c sin(c_c t + d_c)),
+    R(t) = R_0 (C r(q t + b_r) + 1 - C),
+    and (r_x(t), r_y(t)) = C r(q t + b_r) (db_y(t + d_r), -db_x(t + d_r))
+        with r(q t + b_r) = sin(q t + b_r) or r(q t + b_r) = 4 min((q t + b_r) % 1, (-(q t + b_r)) % 1) - 1,
+
+make a dataclass for the parameters:
+    (0) group parameters into
+        (0.D) display parameters such as dimensions, background colour, curve colouring and shading, line width
+        (0.W) curve parameters:
+            (0.W.0) outer parameters such as coordinate functions themselves:
+                (0.W.0.B) of the base curve (this can be circumvented)
+                (0.W.0.C) of the curls: (cos, sin) or angular solutions such as
+                    (min(t%1, (-t)%1), min((t + pi/2)%1, (t + pi/2)%1))
+                (0.W.0.R) the type of radius function to use
+                    (0.W.0.R.1) of the radius in case : sin, cos or angular solutions such as min(t%1, (-t)%1)
+                    (0.W.0.R.2) of the radius: (db_y, -db_x)
+            (0.W.B) base curve: A_b, B_b, a_b, b_b, c_b, d_b (from A_b cos(a_b t + b_b), B_b sin(c_b t + d_b))
+            (0.W.C) curls: A_c, B_c, a_c, b_c, c_c, d_c (from (A_c cos(a_c t + b_c), B_c sin(c_c t + d_c))
+            (0.W.R.1) radius curve: C, q, b_r
+         or (0.W.R.2) radius curve: C, q, b_r, d_r
+    (1) make label, default value, min value, max value, step value dictionaries for the parameters
+    (2) make t a user co
+streamlit interface:
+    (0) sliders, toggles and all that stuff for the parameters of the curve
+    (1) toggles for the hard-wired choices such as the colouring, shading, etc
+    (2) interface structure:
+        (2.0) group sliders by which part of the curve they parameterize:
+        (2.1) make different screens to display the three different aspects of the curve:
+            (2.1.B) the base curve (lissajous or other)
+            (2.1.C) the spirograph-type curls using a simple circle for a base
+            (2.1.R) the radius function using a simple circle for a base
+        (2.D) make a screen for the appearance sittings such as:
+            (2.D.I) dimensions, line_width
+            (2.D.S) shading (on or off with strength scale) based on the distribution of the norms of the derivatives
+            (2.D.C) colouring (single or palette, or bipolar)
+                (2.D.C.S) single colour input devices
+                (2.D.C.P) palette or (2.2.2.B) bipolar based on the derivatives of:
+                    (2.D.C.1.B) the base curve
+                    (2.D.C.1.C) the curls-curve
+                    (2.D.C.1.BC) the curls-curve on the base curve (the whole curve without the radius curve)
+                    (2.D.C.1.R) the radius curve
+                    (2.D.C.1.BR) the radius curve on the base curve( the whole curve without the curls)
+                    (2.D.C.1.W) the whole curve
+    (3) (for speed) send images to streamlit with dimensions smaller than those of the ones that can be saved

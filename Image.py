@@ -17,7 +17,7 @@ class MyImage:
     def fill(self, colour=None):
         if colour is None:
             colour = self.BACKGROUND
-        self.draw.rectangle([(0, 0), (self.width, self.height)], fill=colour, outline=colour, width=2)
+        self.draw.rectangle((0, 0, self.width, self.height), fill=colour, outline=colour, width=2)
 
     def line(self, x0, y0, x, y, colour=(255, 127, 0), width=2):
         self.draw.line((x, y, x0, y0), fill=colour, width=width)  # self.line_width)
