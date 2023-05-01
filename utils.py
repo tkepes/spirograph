@@ -58,7 +58,7 @@ def get_period(*nums):
     return nums[0]
 
 
-def parameters_string(spirog):
+def get_name(spirog):
     # x = A * R0 * cos(at) + B * r0 * cos(bwt)
     # y = C * R0 * sin(ct) - D * r0 * sin(dwt)
     # speed = w
@@ -101,15 +101,15 @@ def parameters_string(spirog):
 
         name += '), y(t) = ('
 
-    st = 'r0 div R0 = {:.2f}, q = {}, rate = {:.2f}, speed = {:.2f}'.format(spirog.r0 / spirog.R0, spirog.q,
-                                                                            spirog.rate, spirog.speed)
+    st = ('R div r = {' + (':.2f' if '.' in str(spirog.r0 / spirog.r0) else '') +
+          '}, q = {}, rate = {:.2f}, speed = {:.2f}').format(spirog.r0 / spirog.r0, spirog.q, spirog.rate, spirog.speed)
     args = spirog.get_params()
     for i in range(8):
         if args[i] != 1:
-            st += ', ' + 'ABCDabcd'[i] + ' = {:.2f}'.format(args[i])
+            st += ', ' + 'ABCDabcd'[i] + (' = {' + (':.2f' if '.00' not in str(args[i]) else '') + '}').format(args[i])
     for i in range(4):
-        if args[i + 8] != 1:
-            st += ', ' + 'Tt'[i // 2] + 'cs'[i % 2] + ' = {}'.format(args[i])
+        if args[i + 8] != 0:
+            st += ', ' + 'Tt'[i // 2] + 'cs'[i % 2] + ' = {}'.format(args[i + 8])
     return st
 
 

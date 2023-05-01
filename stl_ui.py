@@ -34,12 +34,17 @@ base_c = 2  # 3
 rad_ratio = 8
 base_A = 2
 base_curve = {'A': base_A, 'a': base_a, 'b': base_b, 'B': 1, 'c': base_c, 'd': 0}
-ribbon_curve = {'R:r': rad_ratio, 'speed': speed, 'A': 1, 'a': 1, 'b': 0, 'B': 1, 'c': 1, 'd': 0}
+ribbon_curve = {'R div r': rad_ratio, 'speed': speed, 'A': 1, 'a': 1, 'b': 0, 'B': 1, 'c': 1, 'd': 0}
 radius_curve = {'C': C, 'q': q, 'b': 0}
 curves = [base_curve, ribbon_curve, radius_curve]
-curve_codes = ['base', 'ribbon', 'radius']
-params = {((curve_codes[i] + '_') if key in 'ABabcd' else '') + key: curves[i][key] for i in range(len(curve_codes)) for
+curve_codes = ['b', 'c', 'r']
+params = {(key + (curve_codes[i] + '_') if key in 'ABabcd' else ''): curves[i][key] for i in range(len(curve_codes)) for
           key in curves[i].keys()}
+defaults = {key: 0 if key[0] == 'b' else 1 for key in params.keys()}
+defaults['q'] = 1
+defaults['speed'] = 1
+defaults['R div r'] = 0
+defaults['C'] = -1
 
 for i in range(len(curves)):
     curve = curves[i]
@@ -49,22 +54,17 @@ for i in range(len(curves)):
                                          value=curve[param])
 
 
-def parameters_string():
-    st = ('R div r = {' + (':.2f' if '.' in str(ribbon_curve['R:r']) else '') +
-          '}, q = {}, speed = {:.2f}').format(ribbon_curve['R:r'], radius_curve['q'], ribbon_curve['speed'])
-    args = [params['base_A'], params['ribbon_A'], params['base_B'], params['ribbon_B'],
-            params['base_a'], params['ribbon_a'], params['base_c'], params['ribbon_c'],
-            params['base_b'], params['ribbon_b'], params['base_d'], params['ribbon_d']]
-    for i in range(8):
-        if args[i] != 1:
-            st += ', ' + 'ABCDabcd'[i] + ' = {:.2f}'.format(args[i])
-    for i in range(4):
-        if args[i + 8] != 1:
-            st += ', ' + 'Tt'[i // 2] + 'cs'[i % 2] + ' = {}'.format(args[i])
-    return st
+def get_name():
+    keys = ['R div r', 'speed', 'q', 'C', 'A_b', 'A_c', 'B_b', 'B_c', 'a_b', 'a_c', 'c_b', 'c_c', 'b_b', 'b_c', 'd_b',
+            'd_c']
+    name = ''
+    for key in keys:
+        if params[key] != defaults[key]:
+            name += ', ' + key + (' = {' + (':.2f' if params[key] % 1 > 0.01 else '') + '}').format(params[key])
+    return name
 
 
-def GetColour(spirog, colour=np.array([255, 127, 0])):
+def get_colour(spirog, colour=np.array([255, 127, 0])):
     if MY_COLOUR_SCHEME:
         dx, dy = spirog.get_derivatives(COLOURING_SCHEME_TYPE)
         dx, dy = normalise(dx, dy)
@@ -103,16 +103,17 @@ def GetColour(spirog, colour=np.array([255, 127, 0])):
 
 spiro = Spirograph(width=WIDTH, height=HEIGHT, ADAPTIVE_RATE=ADAPTIVE_RATE, base_curve=base_curve,
                    ribbon_curve=ribbon_curve, radius_curve=radius_curve, rad_type='', ORTHOGONAL_WAVES=True)
-draw = MyImage(width=WIDTH, height=HEIGHT, BACKGROUND=BACKGROUND, LINE_WIDTH=2, name=parameters_string(), st_res=1000)
+draw = MyImage(width=WIDTH, height=HEIGHT, BACKGROUND=BACKGROUND, LINE_WIDTH=2, name=get_name(), st_res=1000)
 # DYNAMIC_SHADING=True, MY_COLOUR_SCHEME=True, BIPOLAR_COLOUR_SCHEME=False,
 x, y = spiro.update()
 run = True
 image_holder = st.empty()
 image_holder.image(draw.st_im)
+st.button('Save now!', 'save', on_click=lambda: draw.save(final_save=False))
 while run:
     x0, y0 = x, y
     x, y = spiro.update()
-    colour = GetColour(spiro)
+    colour = get_colour(spiro)
     draw.line(x0, y0, x, y, colour=colour, width=LINE_WIDTH)
     image_holder.image(draw.st_im)
-draw.save(name=parameters_string(), final_save=True)
+draw.save(name=get_name(), final_save=True)

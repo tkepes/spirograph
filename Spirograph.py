@@ -23,7 +23,7 @@ class Spirograph:
         dsin = lambda t, a=1, b=0: a * cos(t, a, b)
         dcos = lambda t, a=1, b=0: -a * sin(t, a, b)
 
-        r_scale = ribbon_curve['R:r']
+        r_scale = ribbon_curve['R div r']
         speed = ribbon_curve['speed']
         self.R0 = min(self.width, self.height) // 2 / (1 + 1 / r_scale)
         self.r0 = self.R0 / r_scale

@@ -5,7 +5,7 @@ from Spirograph import Spirograph
 import pygame as pg
 import pygame_widgets
 from pygame.locals import *
-from utils import parameters_string, normalise
+from utils import get_name, normalise
 
 FPS = 100
 WIDTH, HEIGHT = 2000, 2000
@@ -68,7 +68,7 @@ def main():
                   'C': 0.85, 'q': 20, 'b': 0}
     spiro = Spirograph(width=WIDTH, height=HEIGHT, ADAPTIVE_RATE=ADAPTIVE_RATE)
     draw = Draw(width=WIDTH, height=HEIGHT, DISPLAY=True, SAVE_IMAGE=True, BACKGROUND=BACKGROUND, LINE_WIDTH=2,
-                name=parameters_string(spiro))
+                name=get_name(spiro))
     # DYNAMIC_SHADING=True, MY_COLOUR_SCHEME=True, BIPOLAR_COLOUR_SCHEME=False,
     x, y = spiro.update()
     global POINTS, COLOURS
@@ -105,7 +105,7 @@ def main():
         draw.draw_window(x0, y0, x, y, colour=colour)
         pygame_widgets.update(events)
     pg.quit()
-    draw.save(name=parameters_string(spiro), final_save=True)
+    draw.save(name=get_name(spiro), final_save=True)
 
 
 if __name__ == '__main__':

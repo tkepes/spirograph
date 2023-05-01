@@ -21,7 +21,7 @@ or R(t, x(t), y(t)) = (R_0 x(t) + r_x(t), R_0 y(t) + r_y(t)),
     (c_x(t), c_y(t)) = (A_c cos(a_c t + b_c), B_c sin(c_c t + d_c)),
     R(t) = R_0 (C r(q t + b_r) + 1 - C),
     and (r_x(t), r_y(t)) = C r(q t + b_r) (db_y(t + d_r), -db_x(t + d_r))
-        with r(q t + b_r) = sin(q t + b_r) or r(q t + b_r) = 4 min((q t + b_r) % 1, (-(q t + b_r)) % 1) - 1,
+        with r(q t + b_r) = sin(q t + b_r) or r(q t + b_r) = 4 min((q t + b_r) % 1, (-(q t + b_r)) % 1) - 1
 
 make a dataclass for the parameters:
     (0) group parameters into
@@ -61,4 +61,5 @@ streamlit interface:
                     (2.D.C.1.R) the radius curve
                     (2.D.C.1.BR) the radius curve on the base curve( the whole curve without the curls)
                     (2.D.C.1.W) the whole curve
-    (3) (for speed) send images to streamlit with dimensions smaller than those of the ones that can be saved
+done    (3) add save button
+done    (4) (for speed) send images to streamlit with dimensions smaller than those of the ones that can be saved
