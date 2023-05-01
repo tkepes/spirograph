@@ -15,7 +15,7 @@ class MyImage:
         self.line_width = LINE_WIDTH
         self.name = name
         self.st_margin = st_margin
-        self.st_ress = st_res - 2 * self.st_margin
+        self.st_res = st_res - 2 * self.st_margin
         if self.st_res:
             self.ratio = st_res / max(self.width, self.height)
             self.st_res = round(self.ratio * self.width) + 2 * self.st_margin
