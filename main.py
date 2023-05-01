@@ -18,6 +18,8 @@ ADAPTIVE_RATE = True
 BACKGROUND = (0, 0, 0)  # (31, 0, 10)  # (127, 0, 31)
 POINTS = []
 COLOURS = []
+display_params = {'Width': WIDTH, 'Height': HEIGHT, 'Line width': LINE_WIDTH, 'Dynamic shading': DYNAMIC_SHADING,
+                  'Colouring scheme': COLOURING_SCHEME_TYPE}
 """
     the whole class of curves that this program is able to display can be decomposed into three components:
         the base curve,
@@ -118,7 +120,7 @@ def main():
     pg.font.init()
     global base_curve, ribbon_curve, radius_curve
     spiro = Spirograph(width=WIDTH, height=HEIGHT, ADAPTIVE_RATE=ADAPTIVE_RATE, base_curve=base_curve,
-                       ribbon_curve=ribbon_curve, radius_curve=radius_curve, rad_type='', ORTHOGONAL_WAVES=True)
+                       curls=ribbon_curve, rad_curve=radius_curve, rad_type='', ORTHOGONAL_WAVES=True)
     draw = Draw(width=WIDTH, height=HEIGHT, DISPLAY=True, SAVE_IMAGE=True, BACKGROUND=BACKGROUND, LINE_WIDTH=2,
                 name=get_name())
     # DYNAMIC_SHADING=True, MY_COLOUR_SCHEME=True, BIPOLAR_COLOUR_SCHEME=False,

@@ -102,7 +102,7 @@ def get_colour(spirog, colour=np.array([255, 127, 0])):
 
 
 spiro = Spirograph(width=WIDTH, height=HEIGHT, ADAPTIVE_RATE=ADAPTIVE_RATE, base_curve=base_curve,
-                   ribbon_curve=ribbon_curve, radius_curve=radius_curve, rad_type='', ORTHOGONAL_WAVES=True)
+                   curls=ribbon_curve, rad_curve=radius_curve, rad_type='', ORTHOGONAL_WAVES=True)
 draw = MyImage(width=WIDTH, height=HEIGHT, BACKGROUND=BACKGROUND, LINE_WIDTH=2, name=get_name(), st_res=1000)
 # DYNAMIC_SHADING=True, MY_COLOUR_SCHEME=True, BIPOLAR_COLOUR_SCHEME=False,
 x, y = spiro.update()

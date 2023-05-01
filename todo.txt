@@ -25,6 +25,7 @@ or R(t, x(t), y(t)) = (R_0 x(t) + r_x(t), R_0 y(t) + r_y(t)),
 
 make a dataclass for the parameters:
     (0) group parameters into
+        (0.0) inner parameters: t, adaptive rate strength
         (0.D) display parameters such as dimensions, background colour, curve colouring and shading, line width
         (0.W) curve parameters:
             (0.W.0) outer parameters such as coordinate functions themselves:
@@ -63,3 +64,4 @@ streamlit interface:
                     (2.D.C.1.W) the whole curve
 done    (3) add save button
 done    (4) (for speed) send images to streamlit with dimensions smaller than those of the ones that can be saved
+    (5) fix save button
