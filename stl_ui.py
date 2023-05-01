@@ -45,7 +45,7 @@ for i in range(len(curves)):
     curve = curves[i]
     for param in curve:
         print(param)
-        curve[param] = st.sidebar.slider(((curve_codes[i] + '_') if param in 'ABabcd' else '') + param , value=curve[param])
+        curve[param] = st.sidebar.slider(((curve_codes[i] + '_') if param in 'ABabcd' else '') + param, value=curve[param])
 
 
 def parameters_string():
