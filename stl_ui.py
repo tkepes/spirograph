@@ -8,7 +8,7 @@ from Spirograph import Spirograph
 from utils import normalise
 
 FPS = 100
-WIDTH, HEIGHT = 1000, 1000
+WIDTH, HEIGHT = 2000, 2000
 LINE_WIDTH = 2
 DYNAMIC_SHADING = True
 MY_COLOUR_SCHEME = True
@@ -45,7 +45,8 @@ for i in range(len(curves)):
     curve = curves[i]
     for param in curve:
         print(param)
-        curve[param] = st.sidebar.slider(((curve_codes[i] + '_') if param in 'ABabcd' else '') + param, value=curve[param])
+        curve[param] = st.sidebar.slider(((curve_codes[i] + '_') if param in 'ABabcd' else '') + param,
+                                         value=curve[param])
 
 
 def parameters_string():
@@ -102,16 +103,16 @@ def GetColour(spirog, colour=np.array([255, 127, 0])):
 
 spiro = Spirograph(width=WIDTH, height=HEIGHT, ADAPTIVE_RATE=ADAPTIVE_RATE, base_curve=base_curve,
                    ribbon_curve=ribbon_curve, radius_curve=radius_curve, rad_type='', ORTHOGONAL_WAVES=True)
-draw = MyImage(width=WIDTH, height=HEIGHT, BACKGROUND=BACKGROUND, LINE_WIDTH=2, name=parameters_string())
+draw = MyImage(width=WIDTH, height=HEIGHT, BACKGROUND=BACKGROUND, LINE_WIDTH=2, name=parameters_string(), st_res=1000)
 # DYNAMIC_SHADING=True, MY_COLOUR_SCHEME=True, BIPOLAR_COLOUR_SCHEME=False,
 x, y = spiro.update()
 run = True
 image_holder = st.empty()
-image_holder.image(draw.im)
+image_holder.image(draw.st_im)
 while run:
     x0, y0 = x, y
     x, y = spiro.update()
     colour = GetColour(spiro)
     draw.line(x0, y0, x, y, colour=colour, width=LINE_WIDTH)
-    image_holder.image(draw.im)
+    image_holder.image(draw.st_im)
 draw.save(name=parameters_string(), final_save=True)
