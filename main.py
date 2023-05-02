@@ -127,7 +127,6 @@ def get_name(R=900):
     y_str = base_y_str + (' + ' if curls_y in ['cos', 'coz'] else ' - ') + curls_y_str
 
     if ORTHOGONAL_WAVES:
-        name = ''
         name = ' -- R(t, x(t), y(t)) = R(t)(x(t) + r_x(t), y(t) + r_y(t))'
         rad_x_str = get_str_expr(
             [-(1 - C) / 3 * base_curve_coeffs['A'] * base_curve_coeffs['a'] ** 2, base_x, base_curve_coeffs['a'], 't',
