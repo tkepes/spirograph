@@ -7,9 +7,11 @@ dsin = lambda t, a=1, b=0: a * cos(t, a, b)
 dcos = lambda t, a=1, b=0: -a * sin(t, a, b)
 d2sin = lambda t, a=1, b=0: a * dcos(t, a, b)
 d2cos = lambda t, a=1, b=0: -a * dsin(t, a, b)
-zin = lambda t, a=1, b=0: 4 * min((a * t / pi / 2 + b) % 1, (-(a * t / pi / 2 + b)) % 1) - 1
+pi_transf = lambda t, a=1, b=0: (a * t + b) / (2 * pi) + 1 / 4
+dpi_transf = lambda t, a=1, b=0: a / (2 * pi)
+zin = lambda t, a=1, b=0: 4 * min(pi_transf(t, a, b) % 1, (-pi_transf(t, a, b)) % 1) - 1
 coz = lambda t, a=1, b=0: zin(t, a=1, b=pi / 2 + b)
-dzin = lambda t, a=1, b=0: 2 * a / pi * np.sign(1 / 2 - (a * t / pi / 2 + b) % 1)
+dzin = lambda t, a=1, b=0: 4 * dpi_transf(t, a, b) * np.sign(1 / 2 - pi_transf(t, a, b) % 1)
 dcoz = lambda t, a=1, b=0: dzin(t, a=1, b=pi / 2 + b)
 d2zin = lambda t, a=1, b=0: 0
 d2coz = lambda t, a=1, b=0: 0

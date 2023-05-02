@@ -42,12 +42,13 @@ class MyImage:
         if name is None:
             name = self.name
         self.stage += 1
-        if not final_save and len(self.PATH) == 17:
-            path = self.PATH.instant() + ' - ' + name
-            self.PATH.update(path)
         a = len(str(self.stage))
         if final_save:
             self.im.save(self.PATH + '/' + (('000'[:3 - a] + str(self.stage) + ' ') if self.stage > 1 else '') +
                          self.PATH.instant() + (' ' + name if self.stage == 1 else '') + '.png')
         else:
+            if len(self.PATH) == 17:
+                path = self.PATH.instant() + ' - ' + name
+                self.PATH.update(path)
             self.im.save(self.PATH + '/' + '000'[:3 - a] + str(self.stage) + ' ' + self.PATH.instant() + '.png')
+

@@ -12,7 +12,7 @@ WIDTH, HEIGHT = 2000, 2000
 LINE_WIDTH = 2
 DYNAMIC_SHADING = True
 MY_COLOUR_SCHEME = True
-COLOURING_SCHEME_TYPE: str = 'base_'  # '' for the original, 'curls_' for curls, 'base_' for base
+COLOURING_SCHEME_TYPE: str = ''  # '' for the original, 'curls_' for curls, 'base_' for base,
 BIPOLAR_COLOUR_SCHEME = False
 ADAPTIVE_RATE = True
 BACKGROUND = (0, 0, 0)  # (31, 0, 10)  # (127, 0, 31)
@@ -46,26 +46,27 @@ display_params = {'Width': WIDTH, 'Height': HEIGHT, 'Line width': LINE_WIDTH, 'D
         and (r_x(t), r_y(t)) = C r(q t + b_r) (db_y(t + d_r), -db_x(t + d_r))
             with r(q t + b_r) = sin(q t + b_r) or r(q t + b_r) = 4 min((q t + b_r) % 1, (-(q t + b_r)) % 1) - 1
 """
-base_x = 'coz'
-base_y = 'zin'
+base_x = 'cos'
+base_y = 'sin'
 curls_x = 'cos'
 curls_y = 'sin'
 rad_f = 'zin'
 ORTHOGONAL_WAVES = True
-NORMALISE_WAVES = False
-f = {'base_x': base_x, 'base_y': base_y, 'curls_x': curls_x, 'curls_y': curls_y, 'rad_f': rad_f}
-q = 12  # 20
-C = 0.75  # 0.85
-rad_ratio = 100
+NORMALISE_WAVES = True
+f = {'base_x': base_x, 'base_y': base_y, 'curls_x': curls_x, 'curls_y': curls_y, 'rad_f': rad_f,
+     'Rad shift': ORTHOGONAL_WAVES, 'Normalise waves': NORMALISE_WAVES}
+rad_ratio = 10
 speed = 30.05  # 7.12  # 20.05
 outer_params = {'R div r': rad_ratio, 'speed': speed}  # , 'C': C, 'q': q}
-base_a = 1  # 4
-base_b = 0  # np.pi / 2
-base_c = 1  # 3
+q = 30  # 20
+C = 0.75  # 0.85
+radius_curve_coeffs = {'C': C, 'q': q, 'b': 0}  # np.pi / 2}
+base_a = 4  # 4
+base_b = np.pi / 2
+base_c = 3  # 3
 base_A, base_B = 1, 1
 base_curve_coeffs = {'A': base_A, 'a': base_a, 'b': base_b, 'B': base_B, 'c': base_c, 'd': 0}
 curls_curve_coeffs = {'A': 1, 'a': 1, 'b': 0, 'B': 1, 'c': 1, 'd': 0}
-radius_curve_coeffs = {'C': C, 'q': q, 'b': 0}
 curves = [radius_curve_coeffs, base_curve_coeffs, curls_curve_coeffs]
 curve_codes = ['r', 'b', 'c']
 params = {(key + (('_' + curve_codes[i]) if key in 'ABabcd' else '')): curves[i][key] for i in range(len(curve_codes))
@@ -78,7 +79,7 @@ defaults['R div r'] = 0
 defaults['C'] = 1
 
 
-def get_name():
+def get_name2():
     name = ''
     for key, val in outer_params.items():
         name += f'{key} = {val}, '
@@ -92,7 +93,7 @@ def get_name():
     return name
 
 
-def get_name2(R=900):
+def get_name(R=900):
     operand_defaults = {'': 1, '*': 1, '/': 1, '+': 0, '-': 0, '(': '', ')': ''}
 
     def format_for_print(a):
@@ -100,7 +101,7 @@ def get_name2(R=900):
             return a
         if a == round(a):
             return round(a)
-        return a if len(str(a)) <= 5 else round(a, 4)
+        return a if len(str(a)) <= 5 else round(a, 3)
 
     def get_str_expr(literals):
         operands = ['', '(', '', ' + ', ')']
@@ -126,17 +127,19 @@ def get_name2(R=900):
     y_str = base_y_str + (' + ' if curls_y in ['cos', 'coz'] else ' - ') + curls_y_str
 
     if ORTHOGONAL_WAVES:
+        name = ''
         name = ' -- R(t, x(t), y(t)) = R(t)(x(t) + r_x(t), y(t) + r_y(t))'
         rad_x_str = get_str_expr(
             [-(1 - C) / 3 * base_curve_coeffs['A'] * base_curve_coeffs['a'] ** 2, base_x, base_curve_coeffs['a'], 't',
              base_curve_coeffs['b']])
-        rad_x_str = get_str_expr([rad_x_str, rad_f, q, 't', radius_curve_coeffs['b']]) \
-                    + (' / sqrt(d_2 base_x^2 + d_2 base_y^2)' if NORMALISE_WAVES else '')
+        rad_x_str = ('normed({})' if NORMALISE_WAVES else '{}').format(get_str_expr(
+            [rad_x_str, rad_f, q, 't', radius_curve_coeffs['b']]))
         rad_y_str = get_str_expr(
             [-(1 - C) / 3 * base_curve_coeffs['B'] * base_curve_coeffs['c'] ** 2, base_y, base_curve_coeffs['c'], 't',
              base_curve_coeffs['d']])
-        rad_y_str = get_str_expr([rad_y_str, rad_f, q, 't', radius_curve_coeffs['b']]) \
-                    + (' / sqrt(d_2 base_x^2 + d_2 base_y^2)' if NORMALISE_WAVES else '')
+        rad_y_str = ('normed({})' if NORMALISE_WAVES else '{}').format(
+            get_str_expr([rad_y_str, rad_f, q, 't', radius_curve_coeffs['b']]))
+        # + (' div sqrt(square(d_2 base_x) + square(d_2 base_y))' if NORMALISE_WAVES else '')
         x_str += ' + ' + rad_x_str
         y_str += ' + ' + rad_y_str
         rad_f_str = str(round(R))
@@ -144,7 +147,7 @@ def get_name2(R=900):
     else:
         name = ' -- R(t, x(t), y(t)) = R(t)(x(t), y(t))'
         rad_f_str = get_str_expr([round(R), rad_f, q, radius_curve_coeffs['b']])
-    name = f' {rad_f_str}({x_str}; {y_str})' + name
+    name = f'{rad_f_str}({x_str}, {y_str})' + name
     return name
 
 
@@ -197,7 +200,7 @@ def main():
                        rad_f=rad_f, base_f=(base_x, base_y), curls_f=(curls_x, curls_y),
                        ORTHOGONAL_WAVES=ORTHOGONAL_WAVES, NORMALISE_WAVES=NORMALISE_WAVES)
     draw = Draw(width=WIDTH, height=HEIGHT, DISPLAY=True, SAVE_IMAGE=True, BACKGROUND=BACKGROUND, LINE_WIDTH=2,
-                name=get_name2(spiro.R0))
+                name=get_name(spiro.R0))
     # DYNAMIC_SHADING=True, MY_COLOUR_SCHEME=True, BIPOLAR_COLOUR_SCHEME=False,
     x, y = spiro.update()
     global POINTS, COLOURS
@@ -237,7 +240,7 @@ def main():
         draw.draw_window(x0, y0, x, y, colour=colour)
         pygame_widgets.update(events)
     pg.quit()
-    draw.save(name=get_name2(spiro.R0), final_save=True)
+    draw.save(name=get_name(spiro.R0), final_save=True)
 
 
 if __name__ == '__main__':

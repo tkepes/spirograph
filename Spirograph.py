@@ -44,9 +44,9 @@ class Spirograph:
         self.dcurls_x = lambda t, A=curls['A'], a=curls['a'], b=curls['b']: A * df[curls_f[0]](t, a=a * speed, b=b)
         self.dcurls_y = lambda t, B=curls['B'], c=curls['c'], d=curls['d']: B * df[curls_f[1]](-t, a=c * speed, b=d)
         self.f['curls_x'] = self.curls_x
-        self.f['curls_x'] = self.curls_y
+        self.f['curls_y'] = self.curls_y
         self.df['curls_x'] = self.dcurls_x
-        self.df['curls_x'] = self.dcurls_y
+        self.df['curls_y'] = self.dcurls_y
         # self.R = lambda t: radius_curve_coeffs['R'] * \
         #                    ((1 - radius_curve_coeffs['C']) * sin(t, a=radius_curve_coeffs['q'], b=radius_curve_coeffs['b']) + radius_curve_coeffs[
         #                        'C'])
@@ -58,13 +58,14 @@ class Spirograph:
             my_norm = lambda t: 1
             if NORMALISE_WAVES:
                 my_norm = lambda t: norm(t, self.dbase_x, self.dbase_y)
-            self.rad_x = lambda t, C=rad_curve['C'], q=rad_curve['q'], b=rad_curve['b']: self.R0 / 3 * (
+            kk = np.sqrt(self.r0) / 2
+            self.rad_x = lambda t, C=rad_curve['C'], q=rad_curve['q'], b=rad_curve['b']: self.R0 / kk * (
                     1 - C) * self.dbase_y(t) * f[rad_f](t, a=q, b=b) / my_norm(t)
-            self.rad_y = lambda t, C=rad_curve['C'], q=rad_curve['q'], b=rad_curve['b']: -self.R0 / 3 * (
+            self.rad_y = lambda t, C=rad_curve['C'], q=rad_curve['q'], b=rad_curve['b']: -self.R0 / kk * (
                     1 - C) * self.dbase_x(t) * f[rad_f](t, a=q, b=b) / my_norm(t)
-            self.drad_x = lambda t, C=rad_curve['C'], q=rad_curve['q'], b=rad_curve['b']: self.R0 / 3 * (1 - C) * (
+            self.drad_x = lambda t, C=rad_curve['C'], q=rad_curve['q'], b=rad_curve['b']: self.R0 / kk * (1 - C) * (
                     self.d2base_y(t) * f[rad_f](t, a=q, b=b) + self.dbase_y(t) * df[rad_f](t, a=q, b=b)) / my_norm(t)
-            self.drad_y = lambda t, C=rad_curve['C'], q=rad_curve['q'], b=rad_curve['b']: -self.R0 / 3 * (1 - C) * (
+            self.drad_y = lambda t, C=rad_curve['C'], q=rad_curve['q'], b=rad_curve['b']: -self.R0 / kk * (1 - C) * (
                     self.d2base_x(t) * f[rad_f](t, a=q, b=b) + self.dbase_x(t) * df[rad_f](t, a=q, b=b)) / my_norm(t)
             self.R = lambda t, C=rad_curve['C'], q=rad_curve['q'], b=rad_curve['b']: self.R0
             self.dR = lambda t, C=rad_curve['C'], q=rad_curve['q'], b=rad_curve['b']: 0
