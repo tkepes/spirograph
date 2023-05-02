@@ -12,7 +12,7 @@ WIDTH, HEIGHT = 2000, 2000
 LINE_WIDTH = 2
 DYNAMIC_SHADING = True
 MY_COLOUR_SCHEME = True
-COLOURING_SCHEME_TYPE = 'base'  # anything for the original, 'ribbon' for ribbon, 'base' for base
+COLOURING_SCHEME_TYPE: str = 'base_'  # '' for the original, 'curls_' for curls, 'base_' for base
 BIPOLAR_COLOUR_SCHEME = False
 ADAPTIVE_RATE = True
 BACKGROUND = (0, 0, 0)  # (31, 0, 10)  # (127, 0, 31)
@@ -23,7 +23,7 @@ display_params = {'Width': WIDTH, 'Height': HEIGHT, 'Line width': LINE_WIDTH, 'D
 """
     the whole class of curves that this program is able to display can be decomposed into three components:
         the base curve,
-        a spirograph-like curling component which results in a ribbon-like band in place of the sole line of the base curve
+        a spirograph-like curling component which results in a curls-like band in place of the sole line of the base curve
         and a radius curve which adds big waves to the now band-like line of the curve
     t will denote the measure of rotation vs time
     Let's take a closer look:
@@ -32,7 +32,7 @@ display_params = {'Width': WIDTH, 'Height': HEIGHT, 'Line width': LINE_WIDTH, 'D
             of the base curve and the curls-curve,
         (R) the radius curve is either a factor of the linear combination of the other two:
           R(t) = R_0 (C r(q t) + 1 - C) where c in [0, 1] expresses the strength of the waving effect, i.e. when C = 0,
-            R(t) is simply R_0. E.g. r(q t + b) = sin(q t + b) or r(t) = 4 min((q t + b) % 1, (-(q t + b)) % 1) - 1,
+            R(t) is simply R_0. E.g. r(q t + b) = sin(q t + b) or r(q t + b) = 4 min((q t + b) % 1, (-(q t + b)) % 1) - 1,
             here q + 1 will amount to the number of larger waves along the base curve
           or alternatively the radius curve can be expressed as dynamic shift which is added onto the curve:
           R_2(t) = (r_x(t), r_y(t)), e.g. (r_x(t), r_y(t)) = C r(q t + b) (db_y(t + d), -db_x(t + d))
@@ -46,41 +46,112 @@ display_params = {'Width': WIDTH, 'Height': HEIGHT, 'Line width': LINE_WIDTH, 'D
         and (r_x(t), r_y(t)) = C r(q t + b_r) (db_y(t + d_r), -db_x(t + d_r))
             with r(q t + b_r) = sin(q t + b_r) or r(q t + b_r) = 4 min((q t + b_r) % 1, (-(q t + b_r)) % 1) - 1
 """
-q = 20  # 20
+base_x = 'coz'
+base_y = 'zin'
+curls_x = 'cos'
+curls_y = 'sin'
+rad_f = 'zin'
+ORTHOGONAL_WAVES = True
+NORMALISE_WAVES = False
+f = {'base_x': base_x, 'base_y': base_y, 'curls_x': curls_x, 'curls_y': curls_y, 'rad_f': rad_f}
+q = 12  # 20
 C = 0.75  # 0.85
+rad_ratio = 100
 speed = 30.05  # 7.12  # 20.05
+outer_params = {'R div r': rad_ratio, 'speed': speed}  # , 'C': C, 'q': q}
 base_a = 1  # 4
 base_b = 0  # np.pi / 2
-base_c = 2  # 3
-rad_ratio = 8
-base_A = 2
-base_curve = {'A': base_A, 'a': base_a, 'b': base_b, 'B': 1, 'c': base_c, 'd': 0}
-ribbon_curve = {'R div r': rad_ratio, 'speed': speed, 'A': 1, 'a': 1, 'b': 0, 'B': 1, 'c': 1, 'd': 0}
-radius_curve = {'C': C, 'q': q, 'b': 0}
-curves = [base_curve, ribbon_curve, radius_curve]
-curve_codes = ['b', 'c', 'r']
-params = {(key + (curve_codes[i] + '_') if key in 'ABabcd' else ''): curves[i][key] for i in range(len(curve_codes)) for
-          key in curves[i].keys()}
+base_c = 1  # 3
+base_A, base_B = 1, 1
+base_curve_coeffs = {'A': base_A, 'a': base_a, 'b': base_b, 'B': base_B, 'c': base_c, 'd': 0}
+curls_curve_coeffs = {'A': 1, 'a': 1, 'b': 0, 'B': 1, 'c': 1, 'd': 0}
+radius_curve_coeffs = {'C': C, 'q': q, 'b': 0}
+curves = [radius_curve_coeffs, base_curve_coeffs, curls_curve_coeffs]
+curve_codes = ['r', 'b', 'c']
+params = {(key + (('_' + curve_codes[i]) if key in 'ABabcd' else '')): curves[i][key] for i in range(len(curve_codes))
+          for key in curves[i].keys()}
+print(params.keys())
 defaults = {key: 0 if key[0] == 'b' else 1 for key in params.keys()}
 defaults['q'] = 1
 defaults['speed'] = 1
 defaults['R div r'] = 0
-defaults['C'] = -1
+defaults['C'] = 1
 
 
 def get_name():
-    keys = ['R div r', 'speed', 'q', 'C', 'A_b', 'A_c', 'B_b', 'B_c', 'a_b', 'a_c', 'c_b', 'c_c', 'b_b', 'b_c', 'd_b',
-            'd_c']
     name = ''
-    for key in keys:
-        if params[key] != defaults[key]:
-            name += ', ' + key + (' = {' + (':.2f' if params[key] % 1 > 0.01 else '') + '}').format(params[key])
+    for key, val in outer_params.items():
+        name += f'{key} = {val}, '
+    for i in range(len(curves)):
+        curve = curves[i]
+        for key, val in curve.items():
+            key += (('_' + curve_codes[i]) if key in 'ABabcd' else '')
+            if val != defaults[key]:
+                name += key + (' = {' + (':.2f' if val % 1 > 0.01 else '') + '}').format(val) + ', '
+    name = name[:-2]
+    return name
+
+
+def get_name2(R=900):
+    operand_defaults = {'': 1, '*': 1, '/': 1, '+': 0, '-': 0, '(': '', ')': ''}
+
+    def format_for_print(a):
+        if type(a) == type(''):
+            return a
+        if a == round(a):
+            return round(a)
+        return a if len(str(a)) <= 5 else round(a, 4)
+
+    def get_str_expr(literals):
+        operands = ['', '(', '', ' + ', ')']
+        st = ''
+        if literals[0] != operand_defaults[operands[0]]:
+            st = str(format_for_print(literals[0])) + operands[0]
+        st += str(literals[1]) + operands[1]
+        if literals[2] != operand_defaults[operands[2]]:
+            st += str(format_for_print(literals[2])) + operands[2]
+        st += str(literals[3])
+        if literals[4] != operand_defaults[operands[3].strip()]:
+            st += operands[3] + str(format_for_print(literals[4]))
+        st += operands[-1]
+        return st
+
+    base_x_str = get_str_expr([base_curve_coeffs['A'], base_x, base_curve_coeffs['a'], 't', base_curve_coeffs['b']])
+    base_y_str = get_str_expr([base_curve_coeffs['B'], base_y, base_curve_coeffs['c'], 't', base_curve_coeffs['d']])
+    curls_x_str = get_str_expr(
+        [curls_curve_coeffs['A'], curls_x, curls_curve_coeffs['a'] * speed, 't', curls_curve_coeffs['b']])
+    curls_y_str = get_str_expr(
+        [curls_curve_coeffs['B'], curls_y, curls_curve_coeffs['c'] * speed, 't', curls_curve_coeffs['d']])
+    x_str = base_x_str + (' + ' if curls_x in ['cos', 'coz'] else ' - ') + curls_x_str
+    y_str = base_y_str + (' + ' if curls_y in ['cos', 'coz'] else ' - ') + curls_y_str
+
+    if ORTHOGONAL_WAVES:
+        name = ' -- R(t, x(t), y(t)) = R(t)(x(t) + r_x(t), y(t) + r_y(t))'
+        rad_x_str = get_str_expr(
+            [-(1 - C) / 3 * base_curve_coeffs['A'] * base_curve_coeffs['a'] ** 2, base_x, base_curve_coeffs['a'], 't',
+             base_curve_coeffs['b']])
+        rad_x_str = get_str_expr([rad_x_str, rad_f, q, 't', radius_curve_coeffs['b']]) \
+                    + (' / sqrt(d_2 base_x^2 + d_2 base_y^2)' if NORMALISE_WAVES else '')
+        rad_y_str = get_str_expr(
+            [-(1 - C) / 3 * base_curve_coeffs['B'] * base_curve_coeffs['c'] ** 2, base_y, base_curve_coeffs['c'], 't',
+             base_curve_coeffs['d']])
+        rad_y_str = get_str_expr([rad_y_str, rad_f, q, 't', radius_curve_coeffs['b']]) \
+                    + (' / sqrt(d_2 base_x^2 + d_2 base_y^2)' if NORMALISE_WAVES else '')
+        x_str += ' + ' + rad_x_str
+        y_str += ' + ' + rad_y_str
+        rad_f_str = str(round(R))
+
+    else:
+        name = ' -- R(t, x(t), y(t)) = R(t)(x(t), y(t))'
+        rad_f_str = get_str_expr([round(R), rad_f, q, radius_curve_coeffs['b']])
+    name = f' {rad_f_str}({x_str}; {y_str})' + name
     return name
 
 
 def get_colour(spirog, colour=np.array([255, 127, 0])):
+    cx, cy = COLOURING_SCHEME_TYPE + 'x', COLOURING_SCHEME_TYPE + 'y'
     if MY_COLOUR_SCHEME:
-        dx, dy = spirog.get_derivatives(COLOURING_SCHEME_TYPE)
+        dx, dy = spirog.get_derivatives(x=cx, y=cy)
         dx, dy = normalise(dx, dy)
         z = 1 * np.sin(spirog.t)
         # dx, dy, z = normalise(dx, dy, z)
@@ -106,23 +177,27 @@ def get_colour(spirog, colour=np.array([255, 127, 0])):
         # colour -= np.min(colour)
         colour = np.round(np.maximum(np.minimum(colour, 255), 0)).astype(int)
     if DYNAMIC_SHADING:
-        dx, dy = spirog.get_derivatives(type=COLOURING_SCHEME_TYPE)
+        dx, dy = spirog.get_derivatives(x=cx, y=cy)
         d = (dx ** 2 + dy ** 2) ** 0.5
-        d = (d / max([d, spirog.get_max_diff(type=COLOURING_SCHEME_TYPE) * 0.9])) ** 1
+        d = (d / max([d, spirog.get_max_diff(x=cx, y=cy) * 0.9])) ** 1
         # print(d)
         strength = 0.6
         colour = np.round(strength * (1 / strength - (1 - d)) * colour).astype(int)
+    if np.any(colour < 0) or np.any(colour > 255):
+        colour = (255, 255, 255)
     return tuple(colour)
 
 
 def main():
     pg.init()
     pg.font.init()
-    global base_curve, ribbon_curve, radius_curve
-    spiro = Spirograph(width=WIDTH, height=HEIGHT, ADAPTIVE_RATE=ADAPTIVE_RATE, base_curve=base_curve,
-                       curls=ribbon_curve, rad_curve=radius_curve, rad_type='', ORTHOGONAL_WAVES=True)
+    global base_curve_coeffs, curls_curve_coeffs, radius_curve_coeffs
+    spiro = Spirograph(width=WIDTH, height=HEIGHT, ADAPTIVE_RATE=ADAPTIVE_RATE, outer_params=outer_params,
+                       base_curve=base_curve_coeffs, curls=curls_curve_coeffs, rad_curve=radius_curve_coeffs,
+                       rad_f=rad_f, base_f=(base_x, base_y), curls_f=(curls_x, curls_y),
+                       ORTHOGONAL_WAVES=ORTHOGONAL_WAVES, NORMALISE_WAVES=NORMALISE_WAVES)
     draw = Draw(width=WIDTH, height=HEIGHT, DISPLAY=True, SAVE_IMAGE=True, BACKGROUND=BACKGROUND, LINE_WIDTH=2,
-                name=get_name())
+                name=get_name2(spiro.R0))
     # DYNAMIC_SHADING=True, MY_COLOUR_SCHEME=True, BIPOLAR_COLOUR_SCHEME=False,
     x, y = spiro.update()
     global POINTS, COLOURS
@@ -147,9 +222,11 @@ def main():
                 pg.display.update()
                 pass
             elif event.type == VIDEOEXPOSE:  # handles window minimising/maximising
+                draw.screen.fill(BACKGROUND)
                 # screen.fill((0, 0, 0))
                 # screen.blit(pygame.transform.scale(pic, screen.get_size()), (0, 0))
                 # pygame.display.update()
+                pg.display.update()
                 pass
 
         x0, y0 = x, y
@@ -160,7 +237,7 @@ def main():
         draw.draw_window(x0, y0, x, y, colour=colour)
         pygame_widgets.update(events)
     pg.quit()
-    draw.save(name=get_name(), final_save=True)
+    draw.save(name=get_name2(spiro.R0), final_save=True)
 
 
 if __name__ == '__main__':

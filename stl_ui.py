@@ -20,8 +20,8 @@ POINTS = []
 COLOURS = []
 """
     R(t)(x(t), y(t))
-    where (x(t), y(t)) = (x0(t) + r/R * x1(t), y0(t) + r/R * y1(t))
-    and (x0(t), y0(t)) = (A_0 cos(a_0t + b_0), B_0 sin(c_0t + d_0))
+    where (x(t), y(t)) = (base_x(t) + r/R * x1(t), base_y(t) + r/R * y1(t))
+    and (base_x(t), base_y(t)) = (A_0 cos(a_0t + b_0), B_0 sin(c_0t + d_0))
     and (x1(t), y1(t)) = (A_1 cos(a_1t + b_1), B_1 sin(c_1t + d_1))
     and R(t) = R((1 - C)sin(qt + b) + C)
 """
@@ -33,10 +33,10 @@ base_b = 0  # np.pi / 2
 base_c = 2  # 3
 rad_ratio = 8
 base_A = 2
-base_curve = {'A': base_A, 'a': base_a, 'b': base_b, 'B': 1, 'c': base_c, 'd': 0}
+base_curve_coeffs = {'A': base_A, 'a': base_a, 'b': base_b, 'B': 1, 'c': base_c, 'd': 0}
 ribbon_curve = {'R div r': rad_ratio, 'speed': speed, 'A': 1, 'a': 1, 'b': 0, 'B': 1, 'c': 1, 'd': 0}
-radius_curve = {'C': C, 'q': q, 'b': 0}
-curves = [base_curve, ribbon_curve, radius_curve]
+radius_curve_coeffs = {'C': C, 'q': q, 'b': 0}
+curves = [base_curve_coeffs, ribbon_curve, radius_curve_coeffs]
 curve_codes = ['b', 'c', 'r']
 params = {(key + (curve_codes[i] + '_') if key in 'ABabcd' else ''): curves[i][key] for i in range(len(curve_codes)) for
           key in curves[i].keys()}
@@ -101,8 +101,8 @@ def get_colour(spirog, colour=np.array([255, 127, 0])):
     return tuple(colour)
 
 
-spiro = Spirograph(width=WIDTH, height=HEIGHT, ADAPTIVE_RATE=ADAPTIVE_RATE, base_curve=base_curve,
-                   curls=ribbon_curve, rad_curve=radius_curve, rad_type='', ORTHOGONAL_WAVES=True)
+spiro = Spirograph(width=WIDTH, height=HEIGHT, ADAPTIVE_RATE=ADAPTIVE_RATE, base_curve=base_curve_coeffs,
+                   curls=ribbon_curve, rad_curve=radius_curve_coeffs, rad_f='', ORTHOGONAL_WAVES=True)
 draw = MyImage(width=WIDTH, height=HEIGHT, BACKGROUND=BACKGROUND, LINE_WIDTH=2, name=get_name(), st_res=1000)
 # DYNAMIC_SHADING=True, MY_COLOUR_SCHEME=True, BIPOLAR_COLOUR_SCHEME=False,
 x, y = spiro.update()

@@ -60,9 +60,9 @@ def main():
     pg.init()
     pg.font.init()
     """R(t)(x(t), y(t))"""
-    base_curve = {"""(x0(t), y0(t)) = (A cos(at + b), B sin(ct + d))"""
+    base_curve = {"""(base_x(t), base_y(t)) = (A cos(at + b), B sin(ct + d))"""
                   'A': 1, 'a': 1, 'b': 0, 'B': 1, 'c': 1, 'd': 0}
-    ribbon_curve = {"""(x(t), y(t)) = (x0(t), y0(t)) + r/R(A cos(a speed t + b), B sin(c speed t + d))"""
+    ribbon_curve = {"""(x(t), y(t)) = (base_x(t), base_y(t)) + r/R(A cos(a speed t + b), B sin(c speed t + d))"""
                   'R/r': 10, 'speed': 20.05, 'A': 1, 'a': 1, 'b': 0, 'B': 1, 'c': 1, 'd': 0}
     radius_curve = {"""R(t) = R((1 - C)sin(qt + b) + C)"""
                   'C': 0.85, 'q': 20, 'b': 0}

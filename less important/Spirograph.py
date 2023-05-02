@@ -142,7 +142,7 @@ class Spirograph:
     def coordinate_functions(self, cos_fact, cos_const, sin_fact, sin_const):
         return lambda t: np.cos(cos_fact * t + cos_const), lambda t: np.sin(sin_fact * t + sin_const)
 
-    # def base_curve(self, name='(cos(t); sin(t))'):
+    # def base_curve_coeffs(self, name='(cos(t); sin(t))'):
     #     """
     #     r(A*cos(a*t + b), B*sin(c*t+d))
     #     """
