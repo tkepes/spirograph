@@ -47,9 +47,8 @@ class Spirograph:
         self.f['curls_y'] = self.curls_y
         self.df['curls_x'] = self.dcurls_x
         self.df['curls_y'] = self.dcurls_y
-        # self.R = lambda t: radius_curve_coeffs['R'] * \
-        #                    ((1 - radius_curve_coeffs['C']) * sin(t, a=radius_curve_coeffs['q'], b=radius_curve_coeffs['b']) + radius_curve_coeffs[
-        #                        'C'])
+        # self.R = lambda t: radius_curve_coeffs['R'] * ((1 - radius_curve_coeffs['C']) *
+        # sin(t, a=radius_curve_coeffs['q'], b=radius_curve_coeffs['b']) + radius_curve_coeffs['C'])
         if ORTHOGONAL_WAVES:
             self.d2base_x = lambda t, A=base_curve['A'], a=base_curve['a'], b=base_curve['b']: A * self.d2f[base_f[0]](
                 t, a=a, b=b)

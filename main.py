@@ -1,11 +1,9 @@
-import numpy as np
-
 from Draw import Draw
 from Spirograph import Spirograph
 import pygame as pg
 import pygame_widgets
 from pygame.locals import *
-from utils import normalise
+from Colours import get_colour
 
 FPS = 100
 WIDTH, HEIGHT = 2000, 2000
@@ -57,7 +55,7 @@ ORTHOGONAL_WAVES = True
 NORMALISE_WAVES = False
 f = {'base_x': base_x, 'base_y': base_y, 'curls_x': curls_x, 'curls_y': curls_y, 'rad_f': rad_f,
      'Rad shift': ORTHOGONAL_WAVES, 'Normalise waves': NORMALISE_WAVES}
-rad_ratio = 6 # 12
+rad_ratio = 6  # 12
 speed = 5.2  # 7.12  # 20.05
 outer_params = {'R div r': rad_ratio, 'speed': speed}  # , 'C': C, 'q': q}
 q = 0  # 20
@@ -152,46 +150,6 @@ def get_name(R=900):
     return name
 
 
-def get_colour(spirog, colour=np.array([255, 127, 0])):
-    cx, cy = COLOURING_SCHEME_TYPE + 'x', COLOURING_SCHEME_TYPE + 'y'
-    if MY_COLOUR_SCHEME:
-        dx, dy = spirog.get_derivatives(x=cx, y=cy)
-        dx, dy = normalise(dx, dy)
-        z = 1 * np.sin(spirog.t)
-        # dx, dy, z = normalise(dx, dy, z)
-        # d = np.cos(np.pi / 3 * spirog.t)
-        # dx, dy, z = dx, dy + d, z + d
-        m = min(dx, dy, z)
-        dx, dy, z = dx - m, dy - m, z - m
-        dx, dy, z = normalise(dx, dy, z)
-        colour = np.round(255 * np.array([dx, dy, z])).astype(int)
-    elif BIPOLAR_COLOUR_SCHEME:
-        v = (1, 0)
-        u = (-v[1], v[0])
-        col1 = np.array([0, 0, 255])
-        col2 = 255 - col1
-        dx, dy = spirog.get_derivatives()
-        dx, dy = normalise(dx, dy)
-        n1 = v[0] * dx + v[1] * dy
-        n2 = u[0] * dx + u[1] * dy
-        # phi = np.arccos(u[0] * dx + u[1] * dy) / (np.pi)
-        # colour = np.round((max(0, phi - 0.5) * col1 + max(0, 0.5 - phi) * col2)).astype(int)
-        # colour = np.round((n1 * col1 + n2 * col2) / (max(n1 + n2, 1))).astype(int)
-        colour = (n1 * col1 + n2 * col2) / (max(n1 + n2, 1))
-        # colour -= np.min(colour)
-        colour = np.round(np.maximum(np.minimum(colour, 255), 0)).astype(int)
-    if DYNAMIC_SHADING:
-        dx, dy = spirog.get_derivatives(x=cx, y=cy)
-        d = (dx ** 2 + dy ** 2) ** 0.5
-        d = (d / max([d, spirog.get_max_diff(x=cx, y=cy) * 0.9])) ** 1
-        # print(d)
-        strength = 0.6
-        colour = np.round(strength * (1 / strength - (1 - d)) * colour).astype(int)
-    if np.any(colour < 0) or np.any(colour > 255):
-        colour = (255, 255, 255)
-    return tuple(colour)
-
-
 def main():
     pg.init()
     pg.font.init()
@@ -236,7 +194,8 @@ def main():
         x0, y0 = x, y
         x, y = spiro.update()
         POINTS += [(x, y)]
-        colour = get_colour(spiro)
+        colour = get_colour(spiro, COLOURING_SCHEME_TYPE=COLOURING_SCHEME_TYPE, MY_COLOUR_SCHEME=MY_COLOUR_SCHEME,
+                            BIPOLAR_COLOUR_SCHEME=BIPOLAR_COLOUR_SCHEME, DYNAMIC_SHADING=DYNAMIC_SHADING)
         COLOURS += [colour]
         draw.draw_window(x0, y0, x, y, colour=colour)
         pygame_widgets.update(events)
