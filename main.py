@@ -140,12 +140,16 @@ def get_name(R=900):
         # + (' div sqrt(square(d_2 base_x) + square(d_2 base_y))' if NORMALISE_WAVES else '')
         x_str += ' + ' + rad_x_str
         y_str += ' + ' + rad_y_str
-        rad_f_str = str(round(R))
+        rad_f_str = ''  # str(round(R))
 
     else:
         name = ' -- R(t, x(t), y(t)) = R(t)(x(t), y(t))'
         rad_f_str = get_str_expr([round(R), rad_f, q, radius_curve_coeffs['b']])
     name = f'{rad_f_str}({x_str}, {y_str})' + name
+    while '+ -' in name:
+        name = name.replace('+ -', '- ')
+    while '  ' in name:
+        name = name.replace('  ', ' ')
     return name
 
 

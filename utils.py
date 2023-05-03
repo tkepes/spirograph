@@ -38,44 +38,6 @@ def get_name(spirog):
     # y = C * R0 * sin(ct) - D * r0 * sin(dwt)
     # speed = w
     # rate = t_{n+1} - t_n
-    name = 'f(t) = '
-    if spirog.q != 0:
-        name += 'R(t)'
-    elif spirog.r0 != 0:
-        name += '{:.2f}'.format(spirog.R0 / spirog.r0)
-    else:
-        name += '{}'.format(spirog.R0)
-    name += '(x(t), y(t)), x(t) = ('
-    if spirog.A * spirog.R0 != 0:
-        name += str(spirog.R0)
-        if spirog.A != 1:
-            name += '*{}'.format(spirog.A)
-        if spirog.a != 0:
-            name += 'cos('
-            if spirog.a != 1:
-                name += '{}'.format(spirog.a)
-            name += 't'
-            if spirog.Tc != 0:
-                name += '{:.2f}'.format(spirog.Tc) if spirog.Tc % 1 != 0 else str(round(spirog.Tc))
-            name += ')'
-        else:
-            name += '{:.2f}'.format(np.cos(spirog.Tc))
-        if spirog.r0 * spirog.B != 0:
-            name += ' + '
-            if spirog.r0 != 1:
-                name += str(spirog.r0)
-                if spirog.B != 1:
-                    name += '*{}'.format(spirog.B)
-            elif spirog.B != 1:
-                name += '{}'.format(spirog.B)
-            if spirog.b != 0:
-                name += ''
-            name += ''
-            name += ''
-            name += ''
-
-        name += '), y(t) = ('
-
     st = ('R div r = {' + (':.2f' if '.' in str(spirog.r0 / spirog.r0) else '') +
           '}, q = {}, rate = {:.2f}, speed = {:.2f}').format(spirog.r0 / spirog.r0, spirog.q, spirog.rate, spirog.speed)
     args = spirog.get_params()

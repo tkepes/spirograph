@@ -1,5 +1,7 @@
 # import numpy as np
 # from  numpy import pi as pi
+import numpy as np
+
 from utils import get_period
 from MyFunctions import *
 
@@ -91,17 +93,17 @@ class Spirograph:
         exp = 2
         self.x = lambda t, scale=r_scale: self.width // 2 + self.R(t) * (
                 self.base_x(t) + 1 / scale * self.curls_x(t) + s / scale ** pow * self.curls_x(t, a=speed * (
-            speed ** (exp - 1)))) + self.rad_x(t)
+                speed ** (exp - 1)))) + self.rad_x(t)
         self.y = lambda t, scale=r_scale: self.height // 2 + self.R(t) * (
                 self.base_y(t) + 1 / scale * self.curls_y(t) + s / scale ** pow * self.curls_y(t, c=speed * (
-            speed ** (exp - 1)))) + self.rad_y(t)
+                speed ** (exp - 1)))) + self.rad_y(t)
         self.dx = lambda t, scale=r_scale: self.dR(t) * (
                 self.base_x(t) + 1 / scale * self.curls_x(t) + s / scale ** pow * self.curls_x(-t, a=speed * (
-            speed ** (exp - 1)))) + self.R(t) * (self.dbase_x(t) + 1 / scale * self.dcurls_x(
+                speed ** (exp - 1)))) + self.R(t) * (self.dbase_x(t) + 1 / scale * self.dcurls_x(
             t) + s / scale ** pow * self.dcurls_x(-t, a=speed * (speed ** (exp - 1)))) + self.drad_x(t)
         self.dy = lambda t, scale=r_scale: self.dR(t) * (
                 self.base_y(t) + 1 / scale * self.curls_y(t) + s / scale ** pow * self.curls_y(-t, c=speed * (
-            speed ** (exp - 1)))) + self.R(t) * (self.dbase_y(t) + 1 / scale * self.dcurls_y(
+                speed ** (exp - 1)))) + self.R(t) * (self.dbase_y(t) + 1 / scale * self.dcurls_y(
             t) + s / scale ** pow * self.dcurls_y(-t, c=speed * round(speed ** (exp - 1)))) + self.drad_y(t)
         self.f['x'] = self.x
         self.f['y'] = self.y
@@ -123,10 +125,10 @@ class Spirograph:
         self.t = 0.0
         # self.rate = 0.03  # 31 * pi / 41  # 6 * 1e-2
         self.rate = 3 * min(0.08 / speed, 0.06)
-        nums = (2, max(rad_curve['q'], 1), base_curve['a'], base_curve['c'], curls['a'] * speed, curls['c'] * speed)
-        self.per = np.abs(
-            get_period(2, max(rad_curve['q'], 1), base_curve['a'], base_curve['c'], curls['a'] * speed,
-                       curls['c'] * speed))
+        nums = (2, max(rad_curve['q'], max(1, s * speed ** exp)), base_curve['a'], base_curve['c'], curls['a'] * speed,
+                curls['c'] * speed)
+        self.per = np.abs(get_period(2, max(rad_curve['q'], max(1, s * speed ** exp)), base_curve['a'], base_curve['c'],
+                                     curls['a'] * speed, curls['c'] * speed))
         print(f'A periódus: {self.per}')
         print(nums)
 
@@ -159,7 +161,7 @@ class Spirograph:
     def update(self, x='x', y='y'):
         if self.ADAPTIVE_RATE:
             delta = (np.sqrt(self.df[x](self.t) ** 2 + self.df[y](self.t) ** 2) / self.max_diff[x, y])
-            delta = (delta ** 0.04) / 100  # 100
+            delta = (delta ** 0.04) / max(np.power(self.per, 0.7), 100)  # 100
             # print(round(delta, 3))
             self.t += delta
         else:
@@ -192,7 +194,7 @@ class Spirograph:
                 points.append((self.f[x](t), self.f[y](t)))
                 t += self.rate
                 delta = (np.sqrt(self.df[x](t) ** 2 + self.df[y](t) ** 2) / self.max_diff[x, y])
-                delta = (delta ** 0.04) / self.per ** 0.5
+                delta = (delta ** 0.04) / max(np.power(self.per, 0.7), 100)
                 t += delta
         else:
             while t < limit:
