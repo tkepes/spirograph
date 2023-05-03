@@ -50,6 +50,20 @@ def get_name(spirog):
     return st
 
 
+def get_name2(curves, codes, defaults, outer_params):
+    name = ''
+    for key, val in outer_params.items():
+        name += f'{key} = {val}, '
+    for i in range(len(curves)):
+        curve = curves[i]
+        for key, val in curve.items():
+            key += (('_' + codes[i]) if key in 'ABabcd' else '')
+            if val != defaults[key]:
+                name += key + (' = {' + (':.2f' if val % 1 > 0.01 else '') + '}').format(val) + ', '
+    name = name[:-2]
+    return name
+
+
 def normalise(*nums):
     if len(nums) < 2:
         raise ValueError

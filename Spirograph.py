@@ -161,7 +161,7 @@ class Spirograph:
     def update(self, x='x', y='y'):
         if self.ADAPTIVE_RATE:
             delta = (np.sqrt(self.df[x](self.t) ** 2 + self.df[y](self.t) ** 2) / self.max_diff[x, y])
-            delta = (delta ** 0.04) / max(np.power(self.per, 0.7), 100)  # 100
+            delta = (delta ** 0.04) / max(np.power(self.per, 0.8), 100)  # 100
             # print(round(delta, 3))
             self.t += delta
         else:

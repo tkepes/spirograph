@@ -5,9 +5,9 @@ import pygame_widgets
 from pygame.locals import *
 from Colours import get_colour
 
-FPS = 500
+FPS = 300
 WIDTH, HEIGHT = 2000, 2000
-LINE_WIDTH = 2
+LINE_WIDTH = 1
 DYNAMIC_SHADING = True
 MY_COLOUR_SCHEME = True
 COLOURING_SCHEME_TYPE: str = '(base+curls)_'
@@ -156,12 +156,12 @@ def get_name(R=900):
 def main():
     pg.init()
     pg.font.init()
-    global base_curve_coeffs, curls_curve_coeffs, radius_curve_coeffs
+    # global base_curve_coeffs, curls_curve_coeffs, radius_curve_coeffs
     spiro = Spirograph(width=WIDTH, height=HEIGHT, ADAPTIVE_RATE=ADAPTIVE_RATE, outer_params=outer_params,
                        base_curve=base_curve_coeffs, curls=curls_curve_coeffs, rad_curve=radius_curve_coeffs,
                        rad_f=rad_f, base_f=(base_x, base_y), curls_f=(curls_x, curls_y),
                        ORTHOGONAL_WAVES=ORTHOGONAL_WAVES, NORMALISE_WAVES=NORMALISE_WAVES)
-    draw = Draw(width=WIDTH, height=HEIGHT, DISPLAY=True, SAVE_IMAGE=True, BACKGROUND=BACKGROUND, LINE_WIDTH=2,
+    draw = Draw(width=WIDTH, height=HEIGHT, DISPLAY=True, SAVE_IMAGE=True, BACKGROUND=BACKGROUND, LINE_WIDTH=LINE_WIDTH,
                 name=get_name(spiro.R0))
     # DYNAMIC_SHADING=True, MY_COLOUR_SCHEME=True, BIPOLAR_COLOUR_SCHEME=False,
     x, y = spiro.update()
