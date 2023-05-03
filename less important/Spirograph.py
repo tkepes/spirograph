@@ -1,5 +1,5 @@
 import numpy as np
-from utils import least_multiple_of, get_period
+from utils import get_period
 
 sin = lambda t, a=1, b=0: np.sin(a * t + b)
 cos = lambda t, a=1, b=0: np.cos(a * t + b)
@@ -114,11 +114,7 @@ class Spirograph:
 
         # self.x, self.y = self.update()
 
-        self.per = np.abs(least_multiple_of(max(self.q, 1), self.a, self.b * self.speed, self.c, self.d * self.speed))
-        if self.per != np.abs(get_period(max(self.q, 1), self.a, self.b * self.speed, self.c, self.d * self.speed)):
-            print(self.per,
-                  np.abs(get_period(max(self.q, 1), self.a, self.b * self.speed, self.c, self.d * self.speed)))
-            print(self.q, self.a, self.b * self.speed, self.c, self.d * self.speed)
+        self.per = np.abs(get_period(max(self.q, 1), self.a, self.b * self.speed, self.c, self.d * self.speed))
         # print(self.per)
         if self.per > 10 ** 3:
             m = round(max(self.q, self.a, self.b * self.speed, self.c, self.d * self.speed))

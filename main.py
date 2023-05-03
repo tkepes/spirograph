@@ -5,7 +5,7 @@ import pygame_widgets
 from pygame.locals import *
 from Colours import get_colour
 
-FPS = 100
+FPS = 500
 WIDTH, HEIGHT = 2000, 2000
 LINE_WIDTH = 2
 DYNAMIC_SHADING = True
@@ -56,7 +56,7 @@ NORMALISE_WAVES = False
 f = {'base_x': base_x, 'base_y': base_y, 'curls_x': curls_x, 'curls_y': curls_y, 'rad_f': rad_f,
      'Rad shift': ORTHOGONAL_WAVES, 'Normalise waves': NORMALISE_WAVES}
 rad_ratio = 6  # 12
-speed = 5.2  # 7.12  # 20.05
+speed = 5.8  # 7.12  # 20.05
 outer_params = {'R div r': rad_ratio, 'speed': speed}  # , 'C': C, 'q': q}
 q = 0  # 20
 C = 0.85  # 0.85
@@ -71,11 +71,10 @@ curves = [radius_curve_coeffs, base_curve_coeffs, curls_curve_coeffs]
 curve_codes = ['r', 'b', 'c']
 params = {(key + (('_' + curve_codes[i]) if key in 'ABabcd' else '')): curves[i][key] for i in range(len(curve_codes))
           for key in curves[i].keys()}
-print(params.keys())
 defaults = {key: 0 if key[0] == 'b' else 1 for key in params.keys()}
 defaults['q'] = 1
 defaults['speed'] = 1
-defaults['R div r'] = 0
+defaults['R div r'] = -1
 defaults['C'] = 1
 
 
@@ -194,8 +193,8 @@ def main():
         x0, y0 = x, y
         x, y = spiro.update()
         POINTS += [(x, y)]
-        colour = get_colour(spiro, COLOURING_SCHEME_TYPE=COLOURING_SCHEME_TYPE, MY_COLOUR_SCHEME=MY_COLOUR_SCHEME,
-                            BIPOLAR_COLOUR_SCHEME=BIPOLAR_COLOUR_SCHEME, DYNAMIC_SHADING=DYNAMIC_SHADING)
+        colour = get_colour(spiro, colouring_scheme_type=COLOURING_SCHEME_TYPE, my_colour_scheme=MY_COLOUR_SCHEME,
+                            bipolar_colour_scheme=BIPOLAR_COLOUR_SCHEME, dynamic_shading=DYNAMIC_SHADING)
         COLOURS += [colour]
         draw.draw_window(x0, y0, x, y, colour=colour)
         pygame_widgets.update(events)

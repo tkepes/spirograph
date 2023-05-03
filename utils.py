@@ -14,14 +14,14 @@ def smallest_int_multiple(a):
     decimal_places = len(str(a)) - str(a).index('.') - 1
     b = 10 ** decimal_places
     c = euclidean(round(a * b), b)
-    return b // c
+    return a * b // c
 
 
 def least_multiple(a, b):
     return a * b // euclidean(a, b)
 
 
-def least_multiple_of(*nums):
+def get_period(*nums):
     nums = list(nums)
     for i in range(len(nums)):
         nums[i] = smallest_int_multiple(nums[i])
@@ -29,31 +29,6 @@ def least_multiple_of(*nums):
         j = len(nums) - 1
         while j > 0:
             nums = nums[:j - 1] + [least_multiple(nums[j], nums[j - 1])] + nums[j + 1:]
-            j -= 2
-    return nums[0]
-
-
-def get_period(*nums):
-    nums = list(nums)
-    while len(nums) > 1:
-        j = len(nums) - 1
-        while j > 0:
-            a, b = str(nums[j]), str(nums[j - 1])
-            t = 0
-            n2 = [a, b]
-            for c in n2:
-                if '.' in c:
-                    t = max(t, len(c[c.index('.') + 1:]))
-            if t > 0:
-                for i in range(2):
-                    if '.' not in n2[i]:
-                        n2[i] = n2[i] + '0' * t
-                    else:
-                        n2[i] = n2[i].replace('.', '') + '0' * (t - len(n2[i][n2[i].index('.') + 1:]))
-            a, b = int(n2[0]), int(n2[1])
-
-            c = a * b // euclidean(a, b) // 10 ** t
-            nums = nums[:j - 1] + [c] + nums[j + 1:]
             j -= 2
     return nums[0]
 
