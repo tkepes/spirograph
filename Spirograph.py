@@ -86,20 +86,35 @@ class Spirograph:
         self.df['rad_y'] = self.drad_y
         self.f['rad'] = self.R
         self.df['rad'] = self.dR
-        self.x = lambda t, scale=r_scale: self.width // 2 + self.R(t) * (self.base_x(t) + 1 / scale * self.curls_x(t)) + \
-                                          self.rad_x(t)
+        s = 1
+        pow = 2.2
+        exp = 1.5
+        self.x = lambda t, scale=r_scale: self.width // 2 + self.R(t) * (
+                    self.base_x(t) + 1 / scale * self.curls_x(t) + s / scale ** pow * self.curls_x(t, a=speed * round(
+                speed ** (exp - 1)))) + self.rad_x(t)
         self.y = lambda t, scale=r_scale: self.height // 2 + self.R(t) * (
-                self.base_y(t) + 1 / scale * self.curls_y(t)) + self.rad_y(t)
-        self.dx = lambda t, scale=r_scale: self.dR(t) * (self.base_x(t) + 1 / scale * self.curls_x(t)) + \
-                                           self.R(t) * (self.dbase_x(t) + 1 / scale * self.dcurls_x(t)) + \
-                                           self.drad_x(t)
-        self.dy = lambda t, scale=r_scale: self.dR(t) * (self.base_y(t) + 1 / scale * self.curls_y(t)) + \
-                                           self.R(t) * (self.dbase_y(t) + 1 / scale * self.dcurls_y(t)) + self.drad_y(t)
-
+                    self.base_y(t) + 1 / scale * self.curls_y(t) + s / scale ** pow * self.curls_y(t, c=speed * round(
+                speed ** (exp - 1)))) + self.rad_y(t)
+        self.dx = lambda t, scale=r_scale: self.dR(t) * (
+                    self.base_x(t) + 1 / scale * self.curls_x(t) + s / scale ** pow * self.curls_x(-t, a=speed * round(
+                speed ** (exp - 1)))) + self.R(t) * (self.dbase_x(t) + 1 / scale * self.dcurls_x(
+            t) + s / scale ** pow * self.dcurls_x(-t, a=speed * round(speed ** (exp - 1)))) + self.drad_x(t)
+        self.dy = lambda t, scale=r_scale: self.dR(t) * (
+                    self.base_y(t) + 1 / scale * self.curls_y(t) + s / scale ** pow * self.curls_y(-t, c=speed * round(
+                speed ** (exp - 1)))) + self.R(t) * (self.dbase_y(t) + 1 / scale * self.dcurls_y(
+            t) + s / scale ** pow * self.dcurls_y(-t, c=speed * round(speed ** (exp - 1)))) + self.drad_y(t)
         self.f['x'] = self.x
         self.f['y'] = self.y
         self.df['x'] = self.dx
         self.df['y'] = self.dy
+
+        # some other derivatives for colouring
+        self.df['(base+curls)_x'] = lambda t: self.dx(t) - self.drad_x(t)
+        self.df['(base+curls)_y'] = lambda t: self.dy(t) - self.drad_y(t)
+        self.df['(base+rad)_x'] = lambda t: self.dR(t) * self.base_x(t) + self.R(t) * self.dbase_x(t) + \
+                                            self.drad_x(t)
+        self.df['(base+rad)_y'] = lambda t: self.dR(t) * self.base_y(t) + self.R(t) * self.dbase_y(t) + \
+                                            self.drad_y(t)
 
         self.phi = lambda t, dx=self.dx, dy=self.dy: np.sign(dy(t)) * np.arccos(
             dx(t) / np.sqrt(dx(t) ** 2 + dy(t) ** 2))
@@ -108,11 +123,11 @@ class Spirograph:
         self.t = 0.0
         # self.rate = 0.03  # 31 * pi / 41  # 6 * 1e-2
         self.rate = 3 * min(0.08 / speed, 0.06)
-        nums = (max(rad_curve['q'], 1), base_curve['a'], base_curve['c'], curls['a'] * speed, curls['c'] * speed)
+        nums = (2, max(rad_curve['q'], 1), base_curve['a'], base_curve['c'], curls['a'] * speed, curls['c'] * speed)
         self.per = np.abs(
-            least_multiple_of(max(rad_curve['q'], 1), base_curve['a'], base_curve['c'], curls['a'] * speed,
+            least_multiple_of(2, max(rad_curve['q'], 1), base_curve['a'], base_curve['c'], curls['a'] * speed,
                               curls['c'] * speed))
-        per = np.abs(get_period(max(rad_curve['q'], 1), base_curve['a'], base_curve['c'], curls['a'] * speed,
+        per = np.abs(get_period(2, max(rad_curve['q'], 1), base_curve['a'], base_curve['c'], curls['a'] * speed,
                                 curls['c'] * speed))
         if self.per != per:
             print(f'A két periódus nem egyezik: {self.per} != {per}')
@@ -131,16 +146,23 @@ class Spirograph:
         self.r0 *= rescale_factor
         self.max_base_slope, self.av_base_slope, _ = get_max(self.dbase_x, self.dbase_y, 0,
                                                              least_multiple_of(base_curve['a'], base_curve['c']))
-        self.max_curls_slope, self.av_ribbon_slope, _ = get_max(self.dcurls_x, self.dcurls_y, 0, round(
+        self.max_curls_slope, self.av_curls_slope, _ = get_max(self.dcurls_x, self.dcurls_y, 0, round(
             least_multiple_of(curls['a'], curls['c']) * speed))
         self.max_diff['x', 'y'] = self.max_slope
         self.max_diff['base_x', 'base_y'] = self.max_base_slope
         self.max_diff['curls_x', 'curls_y'] = self.max_curls_slope
+        self.max_diff['curls_x', 'curls_y'] = self.max_curls_slope
+        self.max_diff['(base+curls)_x', '(base+curls)_y'] = max(self.max_base_slope, self.max_curls_slope,
+                                                                self.max_slope)
+        if ORTHOGONAL_WAVES:
+            self.max_rad_slope, self.av_rad_slope, _ = get_max(self.drad_x, self.drad_y, 0, rad_curve['q'])
+            self.max_diff['rad_x', 'rad_y'] = self.max_rad_slope
+            self.max_diff['(base+rad)_x', '(base+rad)_y'] = max(self.max_base_slope, self.max_rad_slope)
 
     def update(self, x='x', y='y'):
         if self.ADAPTIVE_RATE:
             delta = (np.sqrt(self.df[x](self.t) ** 2 + self.df[y](self.t) ** 2) / self.max_diff[x, y])
-            delta = (delta ** 0.04) / 100  # 100
+            delta = (delta ** 0.04) / 500  # 100
             # print(round(delta, 3))
             self.t += delta
         else:
