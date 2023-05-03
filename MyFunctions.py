@@ -18,6 +18,8 @@ d2coz = lambda t, a=1, b=0: 0
 f = {'sin': sin, 'cos': cos, 'zin': zin, 'coz': coz}
 df = {'sin': dsin, 'cos': dcos, 'zin': dzin, 'coz': dcoz}
 d2f = {'sin': d2sin, 'cos': d2cos, 'zin': d2zin, 'coz': d2coz}
+dicts = [f, df, d2f]
+funcs = {(i, key): dicts[i][key] for i in range(len(dicts)) for key in dicts[i]}
 
 norm0 = lambda t, x, y, p=2: np.power(x(t) ** p + y(t) ** p, 1 / p)
 norm = lambda t, x, y, p=2: norm0(t, x, y, p) if norm0(t, x, y, p) != 0 else 1
