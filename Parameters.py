@@ -70,6 +70,10 @@ defaults['speed'] = 1
 defaults['R div r'] = -1
 defaults['C'] = 1
 
+slider_keys = list(set(key for i in range(len(curve_codes)) for key in curves[i].keys())) + list(outer_params.keys())
+widget_types = ['slider', 'checkbox', 'selectbox']
+widget_type_of = {param: 'slider' for param in slider_keys}
+func_names = ['sin', 'cos', 'zin', 'coz']
 
 
 def get_name2():

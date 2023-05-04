@@ -1,7 +1,6 @@
 import numpy as np
-import sys
-
-sys.path.insert(0, '.')
+# import sys
+# sys.path.insert(0, '.')
 import streamlit as st
 from Image import MyImage
 from Spirograph import Spirograph, pi
@@ -10,6 +9,8 @@ from Colours import *
 
 curve_codes = ['outer', 'b', 'c', 'r']
 curves = [outer_params, base_curve_coeffs, curls_curve_coeffs, radius_curve_coeffs]
+
+base_x = st.sidebar.selectbox('base_x', func_names, index=1)
 
 for i in range(len(curves)):
     curve = curves[i]
