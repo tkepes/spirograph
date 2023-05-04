@@ -1,5 +1,5 @@
 from Draw import Draw
-from Spirograph import Spirograph
+from Spirograph import Spirograph, pi
 import pygame as pg
 import pygame_widgets
 from pygame.locals import *
@@ -56,7 +56,7 @@ def main():
         COLOURS += [colour]
         draw.draw_window(x0, y0, x, y, colour=colour)
         pygame_widgets.update(events)
-        run = spiro.t < 2 * spiro.per
+        run = spiro.t < 2 * spiro.per * pi
     pg.quit()
     draw.save(name=get_name(spiro.R0), final_save=True)
 

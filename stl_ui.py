@@ -4,7 +4,7 @@ import sys
 sys.path.insert(0, '.')
 import streamlit as st
 from Image import MyImage
-from Spirograph import Spirograph
+from Spirograph import Spirograph, pi
 from Parameters import *
 from Colours import *
 
@@ -30,7 +30,7 @@ run = True
 image_holder = st.empty()
 image_holder.image(draw.st_im)
 st.button('Save now!', 'save', on_click=lambda: draw.save(final_save=False))
-while spiro.t < 2 * spiro.per:
+while spiro.t < 2 * spiro.per * pi:
     x0, y0 = x, y
     x, y = spiro.update()
     colour = get_colour(spiro, colouring_scheme_type=COLOURING_SCHEME_TYPE, my_colour_scheme=MY_COLOUR_SCHEME,
