@@ -6,8 +6,9 @@ from Image import MyImage
 
 
 class Draw:
-    def __init__(self, width=1000, height=1000, DISPLAY=True, SAVE_IMAGE=True, BACKGROUND=(0, 0, 0), LINE_WIDTH=2,
-                 DISPLAY_WIDTH=1500, DISPLAY_HEIGHT=1000, name=''):
+    def __init__(self, width=1000, height=1000, name='', DISPLAY=True, SAVE_IMAGE=True, BACKGROUND=(0, 0, 0),
+                 LINE_WIDTH=2, DISPLAY_WIDTH=1200, DISPLAY_HEIGHT=700):  # laptop size
+        # DISPLAY_WIDTH=1500, DISPLAY_HEIGHT=1000):# pc size
         self.width = width
         self.height = height
         self.DISPLAY = DISPLAY
