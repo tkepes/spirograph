@@ -4,6 +4,7 @@ LINE_WIDTH = 1
 DYNAMIC_SHADING = True
 MY_COLOUR_SCHEME = True
 COLOURING_SCHEME_TYPE: str = '(base+curls)_'
+COLOURING_SCHEME_TYPE_choices = ['curls_', 'base_', 'rad_', '(base+curls)_', '(base+rad)_']
 # '' for the whole curve, 'curls_' for curls, 'base_' for base, 'rad_' for the radius,
 # '(base+curls)_' for the whole curve without the radius, '(base+rad)_' for the whole curve without the curls
 BIPOLAR_COLOUR_SCHEME = False
@@ -11,8 +12,9 @@ ADAPTIVE_RATE = True
 BACKGROUND = (0, 0, 0)  # (31, 0, 10)  # (127, 0, 31)
 POINTS = []
 COLOURS = []
+rate = 1
 display_params = {'Width': WIDTH, 'Height': HEIGHT, 'Line width': LINE_WIDTH, 'Dynamic shading': DYNAMIC_SHADING,
-                  'Colouring scheme': COLOURING_SCHEME_TYPE}
+                  'Colouring scheme': COLOURING_SCHEME_TYPE, 'Use adaptive rate': ADAPTIVE_RATE, 'rate ': rate}
 """
     the whole class of curves that this program is able to display can be decomposed into three components:
         the base curve,
@@ -44,6 +46,8 @@ base_y = 'sin'
 curls_x = 'cos'
 curls_y = 'sin'
 rad_f = 'zin'
+rad_x, rad_y = 'dy', 'dx'
+rad_xy_coeffs = {'A': -1, 'a': 1, 'b': 0, 'B': 1, 'c': 1, 'd': 0}
 ORTHOGONAL_WAVES = True
 NORMALISE_WAVES = False
 f = {'base_x': base_x, 'base_y': base_y, 'curls_x': curls_x, 'curls_y': curls_y, 'rad_f': rad_f,
@@ -62,7 +66,8 @@ base_curve_coeffs = {'A': base_A, 'a': base_a, 'b': base_b, 'B': base_B, 'c': ba
 curls_curve_coeffs = {'A': 1, 'a': 1, 'b': 0, 'B': 1, 'c': 1, 'd': 0}
 curves = [radius_curve_coeffs, base_curve_coeffs, curls_curve_coeffs]
 curve_codes = ['r', 'b', 'c']
-formula_params = {(key + (('_' + curve_codes[i]) if key in 'ABabcd' else '')): curves[i][key] for i in range(len(curve_codes))
+formula_params = {(key + (('_' + curve_codes[i]) if key in 'ABabcd' else '')): curves[i][key] for i in
+                  range(len(curve_codes))
                   for key in curves[i].keys()}
 defaults = {key: 0 if key[0] == 'b' else 1 for key in formula_params.keys()}
 defaults['q'] = 0

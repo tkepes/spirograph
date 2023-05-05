@@ -88,7 +88,7 @@ class Spirograph:
         self.df['rad_y'] = self.drad_y
         self.f['rad'] = self.R
         self.df['rad'] = self.dR
-        s = 1
+        s = 0
         pow = 2.2
         exp = 2
         self.x = lambda t, scale=r_scale: self.width // 2 + self.R(t) * (
@@ -129,7 +129,9 @@ class Spirograph:
                 curls['c'] * speed)
         self.per = np.abs(get_period(2, max(rad_curve['q'], max(1, s * speed ** exp)), base_curve['a'], base_curve['c'],
                                      curls['a'] * speed, curls['c'] * speed))
-        print(f'A periódus: {self.per}')
+        if self.per % 1 == 0:
+            self.per = round(self.per)
+        print(f'A periódus: {self.per}pi')
         print(nums)
 
         self.max_diff = {}
