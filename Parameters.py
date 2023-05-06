@@ -65,7 +65,10 @@ base_A, base_B = 2, 1
 base_curve_coeffs = {'A': base_A, 'a': base_a, 'b': base_b, 'B': base_B, 'c': base_c, 'd': 0}
 curls_curve_coeffs = {'A': 1, 'a': 1, 'b': 0, 'B': 1, 'c': 1, 'd': 0}
 curves = [radius_curve_coeffs, base_curve_coeffs, curls_curve_coeffs]
-curve_codes = ['r', 'b', 'c']
+if ORTHOGONAL_WAVES:
+    curve_codes = ['r_xy', 'r', 'b', 'c']
+else:
+    curve_codes = ['r', 'b', 'c']
 formula_params = {(key + (('_' + curve_codes[i]) if key in 'ABabcd' else '')): curves[i][key] for i in
                   range(len(curve_codes))
                   for key in curves[i].keys()}
