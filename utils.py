@@ -37,9 +37,9 @@ def get_name(spirog):
     # x = A * R0 * cos(at) + B * r0 * cos(bwt)
     # y = C * R0 * sin(ct) - D * r0 * sin(dwt)
     # speed = w
-    # rate = t_{n+1} - t_n
+    # draw_rate = t_{n+1} - t_n
     st = ('R div r = {' + (':.2f' if '.' in str(spirog.r0 / spirog.r0) else '') +
-          '}, q = {}, rate = {:.2f}, speed = {:.2f}').format(spirog.r0 / spirog.r0, spirog.q, spirog.rate, spirog.speed)
+          '}, q = {}, draw_rate = {:.2f}, speed = {:.2f}').format(spirog.r0 / spirog.r0, spirog.q, spirog.draw_rate, spirog.speed)
     args = spirog.get_params()
     for i in range(8):
         if args[i] != 1:
@@ -81,7 +81,7 @@ def create_folder(directory):
 
 def get_colour(params, spirog, colour=np.array([255, 127, 0])):
     if params.MY_COLOUR_SCHEME:
-        dx, dy = spirog.get_derivatives(params.COLOURING_SCHEME_TYPE)
+        dx, dy = spirog.get_derivatives(params.COLOURING_SCHEME_BASE)
         dx, dy = normalise(dx, dy)
         z = 1 * np.sin(spirog.t)
         # dx, dy, z = normalise(dx, dy, z)
@@ -107,9 +107,9 @@ def get_colour(params, spirog, colour=np.array([255, 127, 0])):
         # colour -= np.min(colour)
         colour = np.round(np.maximum(np.minimum(colour, 255), 0)).astype(int)
     if params.DYNAMIC_SHADING:
-        dx, dy = spirog.get_derivatives(type=params.COLOURING_SCHEME_TYPE)
+        dx, dy = spirog.get_derivatives(type=params.COLOURING_SCHEME_BASE)
         d = (dx ** 2 + dy ** 2) ** 0.5
-        d = (d / max([d, spirog.get_max_diff(type=params.COLOURING_SCHEME_TYPE) * 0.9])) ** 1
+        d = (d / max([d, spirog.get_max_diff(type=params.COLOURING_SCHEME_BASE) * 0.9])) ** 1
         # print(d)
         strength = 0.6
         colour = np.round(strength * (1 / strength - (1 - d)) * colour).astype(int)
@@ -129,12 +129,12 @@ def generate_curve(spirog, limit=0, x=None, y=None, dx=None, dy=None):
     if spirog.ADAPTIVE_RATE:
         while t < limit:
             points.append((x(t), y(t)))
-            t += spirog.rate
+            t += spirog.draw_rate
             delta = (np.sqrt(dx(t) ** 2 + dy(t) ** 2) / spirog.max_slope)
             delta = (delta ** 0.04) / 100
             t += delta
     else:
         while t < limit:
             points.append((x(t), y(t)))
-            t += spirog.rate
+            t += spirog.draw_rate
     return points

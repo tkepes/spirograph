@@ -123,7 +123,7 @@ class Spirograph:
 
         # self.curls_x = lambda t: self.x(t) +
         self.t = 0.0
-        # self.rate = 0.03  # 31 * pi / 41  # 6 * 1e-2
+        # self.draw_rate = 0.03  # 31 * pi / 41  # 6 * 1e-2
         self.rate = 3 * min(0.08 / speed, 0.06)
         nums = (2, max(rad_curve['q'], max(1, s * speed ** exp)), base_curve['a'], base_curve['c'], curls['a'] * speed,
                 curls['c'] * speed)

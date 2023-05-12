@@ -1,20 +1,3 @@
-FPS = 300
-WIDTH, HEIGHT = 2000, 2000
-LINE_WIDTH = 1
-DYNAMIC_SHADING = True
-MY_COLOUR_SCHEME = True
-COLOURING_SCHEME_TYPE: str = '(base+curls)_'
-COLOURING_SCHEME_TYPE_choices = ['curls_', 'base_', 'rad_', '(base+curls)_', '(base+rad)_']
-# '' for the whole curve, 'curls_' for curls, 'base_' for base, 'rad_' for the radius,
-# '(base+curls)_' for the whole curve without the radius, '(base+rad)_' for the whole curve without the curls
-BIPOLAR_COLOUR_SCHEME = False
-ADAPTIVE_RATE = True
-BACKGROUND = (0, 0, 0)  # (31, 0, 10)  # (127, 0, 31)
-POINTS = []
-COLOURS = []
-rate = 1
-display_params = {'Width': WIDTH, 'Height': HEIGHT, 'Line width': LINE_WIDTH, 'Dynamic shading': DYNAMIC_SHADING,
-                  'Colouring scheme': COLOURING_SCHEME_TYPE, 'Use adaptive rate': ADAPTIVE_RATE, 'rate ': rate}
 """
     the whole class of curves that this program is able to display can be decomposed into three components:
         the base curve,
@@ -41,6 +24,41 @@ display_params = {'Width': WIDTH, 'Height': HEIGHT, 'Line width': LINE_WIDTH, 'D
         and (r_x(t), r_y(t)) = C r(q t + b_r) (db_y(t + d_r), -db_x(t + d_r))
             with r(q t + b_r) = sin(q t + b_r) or r(q t + b_r) = 4 min((q t + b_r) % 1, (-(q t + b_r)) % 1) - 1
 """
+
+from dataclasses import dataclass
+
+
+@dataclass
+class Params:
+    WIN: None
+    WIDTH: int = 500
+    HEIGHT: int = 400
+    BACKGROUND: tuple = (255, 255, 255)
+    FPS: int = 10
+    N: int = 50
+    ALPHA: float = 0.0
+    BETA: float = 1.0
+    GAMMA: float = 0.0
+
+
+FPS = 300
+WIDTH, HEIGHT = 2000, 2000
+LINE_WIDTH = 1
+DYNAMIC_SHADING = True
+MY_COLOUR_SCHEME = True
+COLOURING_SCHEME_BASE: str = '(base+curls)_'
+COLOURING_SCHEME_BASE_choices = ['curls_', 'base_', 'rad_', '(base+curls)_', '(base+rad)_']
+# '' for the whole curve, 'curls_' for curls, 'base_' for base, 'rad_' for the radius,
+# '(base+curls)_' for the whole curve without the radius, '(base+rad)_' for the whole curve without the curls
+BIPOLAR_COLOUR_SCHEME = False
+ADAPTIVE_RATE = True
+BACKGROUND = (0, 0, 0)  # (31, 0, 10)  # (127, 0, 31)
+POINTS = []
+COLOURS = []
+draw_rate = 1.0
+display_params = {'Width': WIDTH, 'Height': HEIGHT, 'Line width': LINE_WIDTH, 'Dynamic shading': DYNAMIC_SHADING,
+                  'Colouring scheme': COLOURING_SCHEME_BASE, '': BIPOLAR_COLOUR_SCHEME,
+                  'Use adaptive draw_rate': ADAPTIVE_RATE, 'draw_rate ': draw_rate}
 base_x = 'cos'
 base_y = 'sin'
 curls_x = 'cos'
@@ -66,12 +84,11 @@ base_curve_coeffs = {'A': base_A, 'a': base_a, 'b': base_b, 'B': base_B, 'c': ba
 curls_curve_coeffs = {'A': 1, 'a': 1, 'b': 0, 'B': 1, 'c': 1, 'd': 0}
 curves = [radius_curve_coeffs, base_curve_coeffs, curls_curve_coeffs]
 if ORTHOGONAL_WAVES:
-    curve_codes = ['r_xy', 'r', 'b', 'c']
+    curve_codes = ['r', 'b', 'c']  # curve_codes = ['r_xy', 'r', 'b', 'c']
 else:
     curve_codes = ['r', 'b', 'c']
-formula_params = {(key + (('_' + curve_codes[i]) if key in 'ABabcd' else '')): curves[i][key] for i in
-                  range(len(curve_codes))
-                  for key in curves[i].keys()}
+formula_params = {key + (('_' + curve_codes[i]) if key in 'ABabcd' else ''): curves[i][key] for i in
+                  range(len(curve_codes)) for key in curves[i].keys()}
 defaults = {key: 0 if key[0] == 'b' else 1 for key in formula_params.keys()}
 defaults['q'] = 0
 defaults['speed'] = 1
@@ -84,7 +101,9 @@ widget_type_of = {param: 'slider' for param in slider_keys}
 func_names = ['sin', 'cos', 'zin', 'coz']
 
 
-def get_name2():
+# base curve choices
+
+def get_name2(outer_params=outer_params, curves=curves, curve_codes=curve_codes, defaults=defaults):
     name = ''
     for key, val in outer_params.items():
         name += f'{key} = {val}, '
@@ -98,7 +117,9 @@ def get_name2():
     return name
 
 
-def get_name(R=900):
+def get_name(R=900, base_x=base_x, base_y=base_y, base_curve_coeffs=base_curve_coeffs, curls_x=curls_x, curls_y=curls_y,
+             curls_curve_coeffs=curls_curve_coeffs, radius_curve_coeffs=radius_curve_coeffs, speed=speed, q=q,
+             rad_f=rad_f):
     operand_defaults = {'': 1, '*': 1, '/': 1, '+': 0, '-': 0, '(': '', ')': ''}
 
     def format_for_print(a):

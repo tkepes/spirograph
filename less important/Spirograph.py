@@ -109,7 +109,7 @@ class Spirograph:
         self.phi = lambda t: np.sign(self.dy(t)) * np.arccos(self.dx(t) / np.sqrt(self.dx(t) ** 2 + self.dy(t) ** 2))
         # self.x1 = lambda t: self.x(t) +
         self.t = 0.0
-        # self.rate = 0.03  # 31 * np.pi / 41  # 6 * 1e-2
+        # self.draw_rate = 0.03  # 31 * np.pi / 41  # 6 * 1e-2
         self.rate = 3 * min(0.08 / self.speed, 0.06)
 
         # self.x, self.y = self.update()

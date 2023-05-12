@@ -51,7 +51,7 @@ def main():
         x0, y0 = x, y
         x, y = spiro.update()
         POINTS += [(x, y)]
-        colour = get_colour(spiro, colouring_scheme_type=COLOURING_SCHEME_TYPE, my_colour_scheme=MY_COLOUR_SCHEME,
+        colour = get_colour(spiro, colouring_scheme_type=COLOURING_SCHEME_BASE, my_colour_scheme=MY_COLOUR_SCHEME,
                             bipolar_colour_scheme=BIPOLAR_COLOUR_SCHEME, dynamic_shading=DYNAMIC_SHADING)
         COLOURS += [colour]
         draw.draw_window(x0, y0, x, y, colour=colour)
