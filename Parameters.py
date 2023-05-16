@@ -37,15 +37,15 @@ class Params:
     WIDTH: int = 500
     HEIGHT: int = 400
     BACKGROUND: tuple = (255, 255, 255)
-    FPS: int = 10
+    SPF: int = 10
     N: int = 50
     ALPHA: float = 0.0
     BETA: float = 1.0
     GAMMA: float = 0.0
 
 
-FPS = 500
-MAX_FPS = 50
+SPF = 100 # steps per frame
+FPS = 20
 WIDTH, HEIGHT = 2000, 2000
 LINE_WIDTH = 1
 DYNAMIC_SHADING = True

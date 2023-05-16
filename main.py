@@ -30,9 +30,8 @@ def main():
     clock = pg.time.Clock()
     perimeter = 0
     run = True
-    mod = max(FPS // MAX_FPS, 1)
     while run:
-        clock.tick(MAX_FPS)
+        clock.tick(FPS)
         events = pg.event.get()
         for event in events:
             if event.type == pg.QUIT:
@@ -55,7 +54,7 @@ def main():
                 # pygame.display.update()
                 pg.display.update()
                 pass
-        for _ in range(mod):
+        for _ in range(SPF):
             x0, y0 = x, y
             x, y = spiro.update()
             perimeter += ((x - x0) ** 2 + (y - y0) ** 2) ** 0.5

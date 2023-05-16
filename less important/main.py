@@ -7,7 +7,7 @@ import pygame_widgets
 from pygame.locals import *
 from utils import get_name, normalise
 
-FPS = 100
+SPF = 100
 WIDTH, HEIGHT = 2000, 2000
 LINE_WIDTH = 2
 DYNAMIC_SHADING = True
@@ -76,7 +76,7 @@ def main():
     clock = pg.time.Clock()
     run = True
     while run:
-        clock.tick(FPS)
+        clock.tick(SPF)
         events = pg.event.get()
         for event in events:
             if event.type == pg.QUIT:
