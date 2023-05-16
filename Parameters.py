@@ -1,3 +1,5 @@
+from utils import least_multiple
+
 """
     the whole class of curves that this program is able to display can be decomposed into three components:
         the base curve,
@@ -26,6 +28,7 @@
 """
 
 from dataclasses import dataclass
+from numpy import pi as pi
 
 
 @dataclass
@@ -41,7 +44,8 @@ class Params:
     GAMMA: float = 0.0
 
 
-FPS = 300
+FPS = 500
+MAX_FPS = 50
 WIDTH, HEIGHT = 2000, 2000
 LINE_WIDTH = 1
 DYNAMIC_SHADING = True
@@ -63,25 +67,37 @@ base_x = 'cos'
 base_y = 'sin'
 curls_x = 'cos'
 curls_y = 'sin'
-rad_f = 'zin'
+rad_f = 'sin'
 rad_x, rad_y = 'dy', 'dx'
-rad_xy_coeffs = {'A': -1, 'a': 1, 'b': 0, 'B': 1, 'c': 1, 'd': 0}
+rad_A, rad_B = -1, 1
+rad_xy_coeffs = {'A': rad_A, 'a': 1, 'b': 0, 'B': rad_B, 'c': 1, 'd': 0}
 ORTHOGONAL_WAVES = True
 NORMALISE_WAVES = False
 f = {'base_x': base_x, 'base_y': base_y, 'curls_x': curls_x, 'curls_y': curls_y, 'rad_f': rad_f,
      'Rad shift': ORTHOGONAL_WAVES, 'Normalise waves': NORMALISE_WAVES}
-rad_ratio = 6  # 12
-speed = 5.8  # 7.12  # 20.05
-outer_params = {'R div r': rad_ratio, 'speed': speed}  # , 'C': C, 'q': q}
-q = 0  # 20
-C = 0.85  # 0.85
-radius_curve_coeffs = {'C': C, 'q': q, 'b': 0}  # np.pi / 2}
 base_a = 1  # 4
-base_b = 0  # np.pi / 2
-base_c = 2  # 3
+base_b = 0
+base_c = 2
 base_A, base_B = 2, 1
 base_curve_coeffs = {'A': base_A, 'a': base_a, 'b': base_b, 'B': base_B, 'c': base_c, 'd': 0}
-curls_curve_coeffs = {'A': 1, 'a': 1, 'b': 0, 'B': 1, 'c': 1, 'd': 0}
+lm = least_multiple(base_a, base_c)
+rad_ratio, speed = 1 * 2 * (base_a + base_c), 3 * min((base_a + base_c), lm) + 0.12
+# rad_ratio = 12  # 12
+# speed = 12.05  # 7.12  # 20.05
+base_a = 5  # 4
+base_b = pi / 2
+base_c = 4  # 3
+base_A, base_B = 1, 1
+base_curve_coeffs = {'A': base_A, 'a': base_a, 'b': base_b, 'B': base_B, 'c': base_c, 'd': 0}
+lm = least_multiple(base_a, base_c)
+rad_ratio, speed = 1 * 2 * (base_a + base_c), 3 * min((base_a + base_c), lm) + 0.12
+# speed = 150.05
+outer_params = {'R div r': rad_ratio, 'speed': speed}  # , 'C': C, 'q': q}
+q = 0  # 20
+C = 0.5  # 0.85
+radius_curve_coeffs = {'C': C, 'q': q, 'b': 0}  # np.pi / 2}
+curls_A, curs_B = 1, 1
+curls_curve_coeffs = {'A': curls_A, 'a': 1, 'b': 0, 'B': curs_B, 'c': 1, 'd': 0}
 curves = [radius_curve_coeffs, base_curve_coeffs, curls_curve_coeffs]
 if ORTHOGONAL_WAVES:
     curve_codes = ['r', 'b', 'c']  # curve_codes = ['r_xy', 'r', 'b', 'c']

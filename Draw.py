@@ -68,7 +68,7 @@ class Draw:
                                onClick=lambda: self.im.save(final_save=False)  # Function to call when clicked on
                                )
 
-    def draw_window(self, x0, y0, x, y, colour=(255, 127, 0)):
+    def draw_window(self, x0, y0, x, y, colour=(255, 127, 0), update=True):
         if self.SAVE_IMAGE:
             self.im.line(x0, y0, x, y, colour=colour)
         if self.DISPLAY:
@@ -78,8 +78,9 @@ class Draw:
             x0, y0 = cx + self.resize_ratio * x0, cy + self.resize_ratio * y0
             x, y = cx + self.resize_ratio * x, cy + self.resize_ratio * y
             pg.draw.line(self.screen, colour, (x0, y0), (x, y), width=self.line_width)
-            pg.display.update()
-            pygame_widgets.update(pg.event.get())
+            if update:
+                pg.display.update()
+                pygame_widgets.update(pg.event.get())
 
     def save(self, name=None, final_save=False):
         if name is None:

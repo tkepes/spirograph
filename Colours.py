@@ -37,7 +37,7 @@ def get_colour(spirog: Spirograph, colour=np.array([255, 127, 0]), colouring_sch
     if dynamic_shading:
         dx, dy = spirog.get_derivatives(x=cx, y=cy)
         d = (dx ** 2 + dy ** 2) ** 0.5
-        d = (d / max([d, spirog.get_max_diff(x=cx, y=cy) * 0.9])) ** 1
+        d = (d / max([d, spirog.get_max_diff(x='d' + cx, y='d' + cy) * 0.9])) ** 1
         # print(d)
         strength = 0.3
         colour = np.round(strength * (1 / strength - (1 - d)) * colour).astype(int)

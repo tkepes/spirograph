@@ -15,6 +15,12 @@ def main():
                        base_curve=base_curve_coeffs, curls=curls_curve_coeffs, rad_curve=radius_curve_coeffs,
                        rad_f=rad_f, base_f=(base_x, base_y), curls_f=(curls_x, curls_y),
                        ORTHOGONAL_WAVES=ORTHOGONAL_WAVES, NORMALISE_WAVES=NORMALISE_WAVES)
+
+    # import sympy as sp
+    #
+    # arg = sp.symbols('t')
+    # print(sp.sympify(spiro.x))
+    # print(sp.sympify(spiro.y))
     draw = Draw(width=WIDTH, height=HEIGHT, DISPLAY=True, SAVE_IMAGE=True, BACKGROUND=BACKGROUND, LINE_WIDTH=LINE_WIDTH,
                 name=get_name(spiro.R0))
     # DYNAMIC_SHADING=True, MY_COLOUR_SCHEME=True, BIPOLAR_COLOUR_SCHEME=False,
@@ -22,9 +28,11 @@ def main():
     global POINTS, COLOURS
     POINTS += [(x, y)]
     clock = pg.time.Clock()
+    perimeter = 0
     run = True
+    mod = max(FPS // MAX_FPS, 1)
     while run:
-        clock.tick(FPS)
+        clock.tick(MAX_FPS)
         events = pg.event.get()
         for event in events:
             if event.type == pg.QUIT:
@@ -47,16 +55,22 @@ def main():
                 # pygame.display.update()
                 pg.display.update()
                 pass
-
-        x0, y0 = x, y
-        x, y = spiro.update()
-        POINTS += [(x, y)]
-        colour = get_colour(spiro, colouring_scheme_type=COLOURING_SCHEME_BASE, my_colour_scheme=MY_COLOUR_SCHEME,
-                            bipolar_colour_scheme=BIPOLAR_COLOUR_SCHEME, dynamic_shading=DYNAMIC_SHADING)
-        COLOURS += [colour]
-        draw.draw_window(x0, y0, x, y, colour=colour)
+        for _ in range(mod):
+            x0, y0 = x, y
+            x, y = spiro.update()
+            perimeter += ((x - x0) ** 2 + (y - y0) ** 2) ** 0.5
+            if spiro.step_count % 1000 == 0:
+                print(f'perimeter = {perimeter:n}')
+                print(f'average variance = {perimeter / spiro.step_count:.2f}')
+                # print(f'average variance2 = {perimeter / spiro.t:.2f}')
+            POINTS += [(x, y)]
+            colour = get_colour(spiro, colouring_scheme_type=COLOURING_SCHEME_BASE, my_colour_scheme=MY_COLOUR_SCHEME,
+                                bipolar_colour_scheme=BIPOLAR_COLOUR_SCHEME, dynamic_shading=DYNAMIC_SHADING)
+            COLOURS += [colour]
+            draw.draw_window(x0, y0, x, y, colour=colour, update=False) #spiro.step_count % mod == 0)
+        pg.display.update()
         pygame_widgets.update(events)
-        run = spiro.t < 2 * spiro.per * pi
+        run = run and spiro.t < least_multiple(least_multiple(base_a, base_c), 2) * pi
     pg.quit()
     draw.save(name=get_name(spiro.R0), final_save=True)
 

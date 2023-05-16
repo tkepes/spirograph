@@ -18,6 +18,13 @@ d2coz = lambda t, a=1, b=0: 0
 f = {'sin': sin, 'cos': cos, 'zin': zin, 'coz': coz}
 df = {'sin': dsin, 'cos': dcos, 'zin': dzin, 'coz': dcoz}
 d2f = {'sin': d2sin, 'cos': d2cos, 'zin': d2zin, 'coz': d2coz}
+d3f = {'sin': lambda t, a=1, b=0: -a ** 3 * cos(t, a, b),
+       'cos': lambda t, a=1, b=0: a ** 3 * sin(t, a, b),
+       'zin': d2zin, 'coz': d2coz}
+for g in df:
+    f['d' + g] = df[g]
+for g in d2f:
+    f['d2' + g] = d2f[g]
 dicts = [f, df, d2f]
 funcs = {(i, key): dicts[i][key] for i in range(len(dicts)) for key in dicts[i]}
 
