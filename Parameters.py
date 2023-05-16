@@ -44,7 +44,7 @@ class Params:
     GAMMA: float = 0.0
 
 
-SPF = 100 # steps per frame
+SPF = 100  # steps per frame
 FPS = 20
 WIDTH, HEIGHT = 2000, 2000
 LINE_WIDTH = 1
@@ -105,16 +105,25 @@ else:
     curve_codes = ['r', 'b', 'c']
 formula_params = {key + (('_' + curve_codes[i]) if key in 'ABabcd' else ''): curves[i][key] for i in
                   range(len(curve_codes)) for key in curves[i].keys()}
-defaults = {key: 0 if key[0] == 'b' else 1 for key in formula_params.keys()}
+defaults = {key: 0 if key[0] in 'bd' else 1 for key in formula_params.keys()}
 defaults['q'] = 0
 defaults['speed'] = 1
 defaults['R div r'] = -1
 defaults['C'] = 1
 
-slider_keys = list(set(key for i in range(len(curve_codes)) for key in curves[i].keys())) + list(outer_params.keys())
+# streamlit stuff
+slider_keys = list(set(key for i in range(len(curve_codes)) for key in curves[i].keys())) + list(outer_params.keys()) # _{curve_codes[i]}
 widget_types = ['slider', 'checkbox', 'selectbox']
 widget_type_of = {param: 'slider' for param in slider_keys}
 func_names = ['sin', 'cos', 'zin', 'coz']
+
+slider_min = {key: 0 for key in slider_keys}
+slider_min['R div r'] = 1
+slider_step = {key: 1 if key in 'ABac' else (0.1 * pi if key in 'bd' else 0.01) for key in slider_keys}
+slider_step['R div r'] = 1
+slider_max = {key: 20 if key in 'ABac' else (2 * pi if key in 'bd' else 200) for key in slider_keys}
+slider_max['R div r'] = 30
+slider_max['C'] = 1
 
 
 # base curve choices

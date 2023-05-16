@@ -12,6 +12,7 @@ curve_codes = ['outer', 'b', 'c', 'r']
 curves = [outer_params, base_curve_coeffs, curls_curve_coeffs, radius_curve_coeffs]
 base_choices = ['', 'circle', 'lissajous(1, 2)', 'lissajous(3, 2)', 'lissajous(4, 3)', 'lissajous(5, 4)',
                 'lissajous(6, 5)']
+defaults
 
 with st.sidebar.expander("Base curve settings") as exp1:
     base_choice = st.selectbox('base choice', base_choices, index=0)
@@ -34,8 +35,9 @@ with st.sidebar.expander("Base curve settings") as exp1:
     base_x = st.selectbox('base_x', func_names, index=base_x_ind)
     base_y = st.selectbox('base_y', func_names, index=base_y_ind)
     for param in base_curve_coeffs:
-        base_curve_coeffs[param] = st.slider(param + ('_b' if param in 'ABabcd' else ''),
-                                             value=base_curve_coeffs[param])
+        base_curve_coeffs[param] = st.slider(param + ('_b' if param in 'ABabcd' else ''), min_value=slider_min[param],
+                                             value=base_curve_coeffs[param], max_value=slider_max[param],
+                                             step=slider_step[param])
 
 with st.sidebar.expander("Curls curve settings"):
     curls_choices = base_choices
@@ -54,7 +56,6 @@ with st.sidebar.expander("Curls curve settings"):
         #     rad_ratio, speed = 12, 12.05
         # else:
         #     rad_ratio, speed = 8, 20.24
-
     elif 'circle' in curls_choice:
         rad_ratio, speed = 2, 1.04
         curls_x_ind, curls_y_ind = 1, 0
@@ -65,8 +66,10 @@ with st.sidebar.expander("Curls curve settings"):
     curls_x = st.selectbox('curls_x', func_names, index=curls_x_ind)
     curls_y = st.selectbox('curls_y', func_names, index=curls_y_ind)
     for param in curls_curve_coeffs:
-        curls_curve_coeffs[param] = st.slider(param + ('_c' if param in 'ABabcd' else ''),
-                                              value=curls_curve_coeffs[param])
+        curls_curve_coeffs[param] = st.slider(param + ('_c' if param in 'ABabcd' else ''), min_value=slider_min[param],
+                                              value=curls_curve_coeffs[param], max_value=slider_max[param],
+                                              step=slider_step[param])
+
 for i in range(len(curves)):
     curve = curves[i]
     if curve_codes[i] in 'bc':
@@ -74,7 +77,8 @@ for i in range(len(curves)):
     for param in curve:
         print(param)
         curve[param] = st.sidebar.slider(param + (('_' + curve_codes[i]) if param in 'ABabcd' else ''),
-                                         value=curve[param])
+                                         value=curve[param], min_value=slider_min[param], max_value=slider_max[param],
+                                         step=slider_step[param])
 
 spiro = Spirograph(width=WIDTH, height=HEIGHT, ADAPTIVE_RATE=ADAPTIVE_RATE, outer_params=outer_params,
                    base_curve=base_curve_coeffs, curls=curls_curve_coeffs, rad_curve=radius_curve_coeffs,
@@ -91,15 +95,16 @@ image_holder = st.empty()
 image_holder.image(draw.st_im)
 st.button('Save now!', 'save', on_click=lambda: draw.save(final_save=False))
 i = 0
-while spiro.t < least_multiple(least_multiple(base_a, base_c), 2) * pi:
+while spiro.t < spiro.per * pi:
     x0, y0 = x, y
     x, y = spiro.update()
     colour = get_colour(spiro, colouring_scheme_type=COLOURING_SCHEME_BASE, my_colour_scheme=MY_COLOUR_SCHEME,
                         bipolar_colour_scheme=BIPOLAR_COLOUR_SCHEME, dynamic_shading=DYNAMIC_SHADING)
     draw.line(x0, y0, x, y, colour=colour, width=LINE_WIDTH)
-    if i % 100 == 0:
+    if i % SPF == 0:
         image_holder.image(draw.st_im)
     i += 1
+image_holder.image(draw.st_im)
 name = get_name(spiro.R0, base_x=base_x, base_y=base_y, base_curve_coeffs=base_curve_coeffs, curls_x=curls_x,
                 curls_y=curls_y, curls_curve_coeffs=curls_curve_coeffs, radius_curve_coeffs=radius_curve_coeffs,
                 speed=speed, q=q, rad_f=rad_f)
