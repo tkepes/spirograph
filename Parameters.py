@@ -70,16 +70,16 @@ curls_y = 'sin'
 rad_f = 'sin'
 rad_x, rad_y = 'dy', 'dx'
 rad_A, rad_B = -1, 1
-rad_xy_coeffs = {'A': rad_A, 'a': 1, 'b': 0, 'B': rad_B, 'c': 1, 'd': 0}
+rad_xy_coeffs = {'A': rad_A, 'a': 1, 'b': 0.0, 'B': rad_B, 'c': 1, 'd': 0.0}
 ORTHOGONAL_WAVES = True
 NORMALISE_WAVES = False
 f = {'base_x': base_x, 'base_y': base_y, 'curls_x': curls_x, 'curls_y': curls_y, 'rad_f': rad_f,
      'Rad shift': ORTHOGONAL_WAVES, 'Normalise waves': NORMALISE_WAVES}
 base_a = 1  # 4
-base_b = 0
+base_b = 0.0
 base_c = 2
 base_A, base_B = 2, 1
-base_curve_coeffs = {'A': base_A, 'a': base_a, 'b': base_b, 'B': base_B, 'c': base_c, 'd': 0}
+base_curve_coeffs = {'A': base_A, 'a': base_a, 'b': base_b, 'B': base_B, 'c': base_c, 'd': 0.0}
 lm = least_multiple(base_a, base_c)
 rad_ratio, speed = 1 * 2 * (base_a + base_c), 3 * min((base_a + base_c), lm) + 0.12
 # rad_ratio = 12  # 12
@@ -88,16 +88,16 @@ base_a = 5  # 4
 base_b = pi / 2
 base_c = 4  # 3
 base_A, base_B = 1, 1
-base_curve_coeffs = {'A': base_A, 'a': base_a, 'b': base_b, 'B': base_B, 'c': base_c, 'd': 0}
+base_curve_coeffs = {'A': base_A, 'a': base_a, 'b': base_b, 'B': base_B, 'c': base_c, 'd': 0.0}
 lm = least_multiple(base_a, base_c)
 rad_ratio, speed = 1 * 2 * (base_a + base_c), 3 * min((base_a + base_c), lm) + 0.12
 # speed = 150.05
 outer_params = {'R div r': rad_ratio, 'speed': speed}  # , 'C': C, 'q': q}
-q = 0  # 20
+q = 0.0  # 20
 C = 0.5  # 0.85
-radius_curve_coeffs = {'C': C, 'q': q, 'b': 0}  # np.pi / 2}
+radius_curve_coeffs = {'C': C, 'q': q, 'b': 0.0}  # np.pi / 2}
 curls_A, curs_B = 1, 1
-curls_curve_coeffs = {'A': curls_A, 'a': 1, 'b': 0, 'B': curs_B, 'c': 1, 'd': 0}
+curls_curve_coeffs = {'A': curls_A, 'a': 1, 'b': 0.0, 'B': curs_B, 'c': 1, 'd': 0.0}
 curves = [radius_curve_coeffs, base_curve_coeffs, curls_curve_coeffs]
 if ORTHOGONAL_WAVES:
     curve_codes = ['r', 'b', 'c']  # curve_codes = ['r_xy', 'r', 'b', 'c']
@@ -106,10 +106,10 @@ else:
 formula_params = {key + (('_' + curve_codes[i]) if key in 'ABabcd' else ''): curves[i][key] for i in
                   range(len(curve_codes)) for key in curves[i].keys()}
 defaults = {key: 0 if key[0] in 'bd' else 1 for key in formula_params.keys()}
-defaults['q'] = 0
-defaults['speed'] = 1
+defaults['q'] = 0.0
+defaults['speed'] = 1.0
 defaults['R div r'] = -1
-defaults['C'] = 1
+defaults['C'] = 1.0
 
 # streamlit stuff
 slider_keys = list(set(key for i in range(len(curve_codes)) for key in curves[i].keys())) + list(outer_params.keys()) # _{curve_codes[i]}
@@ -117,13 +117,13 @@ widget_types = ['slider', 'checkbox', 'selectbox']
 widget_type_of = {param: 'slider' for param in slider_keys}
 func_names = ['sin', 'cos', 'zin', 'coz']
 
-slider_min = {key: 0 for key in slider_keys}
+slider_min = {key: 0.0 if key in 'bdqspeedC' else 0 for key in slider_keys}
 slider_min['R div r'] = 1
 slider_step = {key: 1 if key in 'ABac' else (0.1 * pi if key in 'bd' else 0.01) for key in slider_keys}
 slider_step['R div r'] = 1
-slider_max = {key: 20 if key in 'ABac' else (2 * pi if key in 'bd' else 200) for key in slider_keys}
+slider_max = {key: 20 if key in 'ABac' else (2 * pi if key in 'bd' else 200.0) for key in slider_keys}
 slider_max['R div r'] = 30
-slider_max['C'] = 1
+slider_max['C'] = 1.0
 
 
 # base curve choices

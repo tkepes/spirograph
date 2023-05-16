@@ -12,25 +12,24 @@ curve_codes = ['outer', 'b', 'c', 'r']
 curves = [outer_params, base_curve_coeffs, curls_curve_coeffs, radius_curve_coeffs]
 base_choices = ['', 'circle', 'lissajous(1, 2)', 'lissajous(3, 2)', 'lissajous(4, 3)', 'lissajous(5, 4)',
                 'lissajous(6, 5)']
-defaults
 
 with st.sidebar.expander("Base curve settings") as exp1:
     base_choice = st.selectbox('base choice', base_choices, index=0)
     if 'lissajous' in base_choice:
         base_x_ind, base_y_ind = 1, 0
         a, c = int(base_choice[-5]), int(base_choice[-2])
-        A, b = 1, 0
+        A, b = 1, 0.0
         if (a, c) == (1, 2):
             A = 2
         else:
             b = np.pi / 2
-        base_curve_coeffs = {'A': A, 'a': a, 'b': b, 'B': 1, 'c': c, 'd': 0}
+        base_curve_coeffs = {'A': A, 'a': a, 'b': b, 'B': 1, 'c': c, 'd': 0.0}
     elif 'circle' in base_choice:
         base_x_ind, base_y_ind = 1, 0
-        base_curve_coeffs = {'A': 1, 'a': 1, 'b': 0, 'B': 1, 'c': 1, 'd': 0}
+        base_curve_coeffs = {'A': 1, 'a': 1, 'b': 0.0, 'B': 1, 'c': 1, 'd': 0.0}
     else:
         base_x_ind, base_y_ind = 1, 0
-        base_curve_coeffs = {'A': 1, 'a': 1, 'b': 0, 'B': 1, 'c': 1, 'd': 0}
+        base_curve_coeffs = {'A': 1, 'a': 1, 'b': 0.0, 'B': 1, 'c': 1, 'd': 0.0}
 
     base_x = st.selectbox('base_x', func_names, index=base_x_ind)
     base_y = st.selectbox('base_y', func_names, index=base_y_ind)
@@ -75,7 +74,6 @@ for i in range(len(curves)):
     if curve_codes[i] in 'bc':
         continue
     for param in curve:
-        print(param)
         curve[param] = st.sidebar.slider(param + (('_' + curve_codes[i]) if param in 'ABabcd' else ''),
                                          value=curve[param], min_value=slider_min[param], max_value=slider_max[param],
                                          step=slider_step[param])

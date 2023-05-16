@@ -137,7 +137,7 @@ class Spirograph:
         f['x'], f['y'] = self.x, self.y
         df['x'], df['y'] = self.dx, self.dy
         d2f['x'], d2f['y'] = self.d2x, self.d2y
-        print(base_x, base_y, curls_x, curls_y, speed, r_scale)
+        # print(base_x, base_y, curls_x, curls_y, speed, r_scale)
         # some other derivatives for colouring
         df['(base+curls)_x'] = lambda t: self.dx(t) - self.drad_x(t)
         df['(base+curls)_y'] = lambda t: self.dy(t) - self.drad_y(t)
@@ -166,8 +166,7 @@ class Spirograph:
                                      curls['a'] * speed, curls['c'] * speed))
         if self.per % 1 == 0:
             self.per = round(self.per)
-        print(f'A periódus: {self.per}pi')
-        print(nums)
+        print(f'A periódus: {self.per}pi', nums)
 
         a, b = 0, self.per * pi
         b = int(round(b + 0.5))
