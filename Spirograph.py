@@ -18,7 +18,7 @@ def get_max(f, g, a, b):
 class Spirograph:
     def __init__(self, width=2000, height=2000, ADAPTIVE_RATE=True, outer_params=None, base_curve=None, curls=None,
                  rad_curve=None, ORTHOGONAL_WAVES=False, NORMALISE_WAVES=False, base_f=('cos', 'sin'),
-                 curls_f=('cos', 'sin'), rad_f='sin', **kwargs):
+                 curls_f=('cos', 'sin'), rad_f='sin', section_fact=1, **kwargs):
         global f, df, d2f, d3f
         # self.f, self.df, self.d2f = f, df, d2f
         self.width, self.height = width, height
@@ -39,7 +39,7 @@ class Spirograph:
         d2f['base_x'], d2f['base_y'] = self.d2base_x, self.d2base_y
         # curls curve and radius
         if outer_params is None:
-            outer_params = {'R div r': 1, 'speed': 1}
+            outer_params = {'R div r': 1, 'speed': 0}
         r_scale = outer_params['R div r']
         speed = outer_params['speed']
         self.R0 = min(self.width, self.height) // 2 / (1 + 1 / r_scale)
@@ -159,7 +159,12 @@ class Spirograph:
         self.perimeter = 0
         self.av = 1
         # self.draw_rate = 0.03  # 31 * pi / 41  # 6 * 1e-2
-        self.rate = 3 * min(0.08 / speed, 0.06)
+        if speed != 0:
+            self.rate = 3 * min(0.08 / speed, 0.06)
+        else:
+            self.rate = 0.1
+
+        # calculating the period of the whole curve
         nums = (2, max(rad_curve['q'], max(1, s * speed ** exp)), base_curve['a'], base_curve['c'], curls['a'] * speed,
                 curls['c'] * speed)
         self.per = np.abs(get_period(2, max(rad_curve['q'], max(1, s * speed ** exp)), base_curve['a'], base_curve['c'],
@@ -167,6 +172,12 @@ class Spirograph:
         if self.per % 1 == 0:
             self.per = round(self.per)
         print(f'A periódus: {self.per}pi', nums)
+
+        # sections of the base curve
+        self.section_fact = section_fact
+        self.section_num = 1
+        self.next_sect_point = self.section_num * 2 * pi / self.per / self.section_fact
+        self.section_unit = 2 * pi / self.per / self.section_fact
 
         a, b = 0, self.per * pi
         b = int(round(b + 0.5))
@@ -195,9 +206,9 @@ class Spirograph:
         for g in max_norm.keys():
             self.max_diff[g + 'x', g + 'y'] = max_norm[g]
             self.av_diff[g + 'x', g + 'y'] = av_norm[g] / len(T)
-        print(self.max_diff.keys())
-        for key, val in self.max_diff.items():
-            print(f'{key}: {val:.2f}, {self.av_diff[key]:.2f}')
+        # print(self.max_diff.keys())
+        # for key, val in self.max_diff.items():
+        #     print(f'{key}: {val:.2f}, {self.av_diff[key]:.2f}')
         self.max_norm = max_norm
         # self.max_slope, self.av_slope, T = get_max(self.dx, self.dy, 0, self.per * pi)
         # print(round(self.max_slope, 2), round(self.av_slope, 2))
@@ -223,7 +234,13 @@ class Spirograph:
         # self.max_diff['rad_x', 'rad_y'] = self.max_rad_slope
         # self.max_diff['(base+rad)_x', '(base+rad)_y'] = max(self.max_base_slope, self.max_rad_slope)
 
-    def update(self, x='x', y='y', pref='d'):
+    def get_point(self, x='x', y='y', pref='', t=None):
+        global f
+        if t is None:
+            t = self.t
+        return f[pref + x](t), f[pref + y](t)
+
+    def update(self, x='x', y='y', pref='d', draw_rate=1000):
         global f
         target = 10
         self.step_count += 1
@@ -235,16 +252,22 @@ class Spirograph:
             delta = np.sqrt(f[px](self.t) ** 2 + f[py](self.t) ** 2) / (self.max_diff[px, py]) ** 1.5
             # delta = delta ** 0.5
             if delta >= 1:
-                print(f'{self.t:.2f}, {np.sqrt(f[px](self.t) ** 2 + f[py](self.t) ** 2):.2f}')
+                print(f'delta >= 1: {self.t:.2f}, {np.sqrt(f[px](self.t) ** 2 + f[py](self.t) ** 2):.2f}')
+                print(f'{self.next_sect_point:.2f}, {self.section_num}')
             # delta = (delta ** 0.04) / max(np.power(self.per, 0.8), 100)  # 100
             # print(round(delta, 3))
             # while np.abs((self.phi(self.t + delta, dx=f[px], dy=f[py]) - self.phi(self.t, dx=f[px], dy=f[py]))) % (
             #         2 * pi) > 0.05 * pi:
             #     # print(f'{delta}, {self.phi(self.t + delta, dx=f[px], dy=f[py]) - self.phi(self.t, dx=f[px], dy=f[py]):.2f}')
             #     delta /= 2
-            self.t += delta * self.av  # /100# * self.av  # + self.t / (self.av * self.step_count)
+            self.t += delta * self.av * draw_rate / 1000  # /100# * self.av  # + self.t / (self.av * self.step_count)
         else:
             self.t += self.rate
+        # to enforce proper colour changes at visible points
+        if self.t > self.next_sect_point:
+            self.t = self.next_sect_point
+            self.section_num += 1
+            self.next_sect_point = self.section_num * 2 * pi / self.per / self.section_fact
         if x + y == 'xy':
             x1, y1 = f[x](self.t), f[y](self.t)
             self.perimeter += np.sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2)

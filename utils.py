@@ -23,6 +23,8 @@ def least_multiple(a, b):
 
 def get_period(*nums):
     nums = list(nums)
+    while 0 in nums:
+        nums.remove(0)
     for i in range(len(nums)):
         nums[i] = smallest_int_multiple(nums[i])
     while len(nums) > 1:

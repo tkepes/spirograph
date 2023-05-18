@@ -1,4 +1,4 @@
-from utils import least_multiple
+from utils import least_multiple, get_period
 
 """
     the whole class of curves that this program is able to display can be decomposed into three components:
@@ -59,10 +59,10 @@ ADAPTIVE_RATE = True
 BACKGROUND = (0, 0, 0)  # (31, 0, 10)  # (127, 0, 31)
 POINTS = []
 COLOURS = []
-draw_rate = 1.0
+draw_rate = 1000
 display_params = {'Width': WIDTH, 'Height': HEIGHT, 'Line width': LINE_WIDTH, 'Dynamic shading': DYNAMIC_SHADING,
                   'Colouring scheme': COLOURING_SCHEME_BASE, '': BIPOLAR_COLOUR_SCHEME,
-                  'Use adaptive draw_rate': ADAPTIVE_RATE, 'draw_rate ': draw_rate}
+                  'Use adaptive draw_rate': ADAPTIVE_RATE, 'draw_rate ': draw_rate, 'FPS': FPS, 'SPF': SPF}
 base_x = 'cos'
 base_y = 'sin'
 curls_x = 'cos'
@@ -80,17 +80,19 @@ base_b = 0.0
 base_c = 2
 base_A, base_B = 2, 1
 base_curve_coeffs = {'A': base_A, 'a': base_a, 'b': base_b, 'B': base_B, 'c': base_c, 'd': 0.0}
+base_per = get_period(base_a, base_c, 2)
 lm = least_multiple(base_a, base_c)
-rad_ratio, speed = 1 * 2 * (base_a + base_c), 3 * min((base_a + base_c), lm) + 0.12
+speed = 7.12
+rad_ratio, speed = 1 * 2 * (base_a + base_c), round(base_per // 2 * (speed // 1) + speed % 1, 2)
 # rad_ratio = 12  # 12
 # speed = 12.05  # 7.12  # 20.05
-base_a = 5  # 4
-base_b = pi / 2
-base_c = 4  # 3
-base_A, base_B = 1, 1
-base_curve_coeffs = {'A': base_A, 'a': base_a, 'b': base_b, 'B': base_B, 'c': base_c, 'd': 0.0}
-lm = least_multiple(base_a, base_c)
-rad_ratio, speed = 1 * 2 * (base_a + base_c), 3 * min((base_a + base_c), lm) + 0.12
+# base_a = 5  # 4
+# base_b = pi / 2
+# base_c = 4  # 3
+# base_A, base_B = 1, 1
+# base_curve_coeffs = {'A': base_A, 'a': base_a, 'b': base_b, 'B': base_B, 'c': base_c, 'd': 0.0}
+# lm = least_multiple(base_a, base_c)
+# rad_ratio, speed = 1 * 2 * (base_a + base_c), 3 * min((base_a + base_c), lm) + 0.12
 # speed = 150.05
 outer_params = {'R div r': rad_ratio, 'speed': speed}  # , 'C': C, 'q': q}
 q = 0.0  # 20

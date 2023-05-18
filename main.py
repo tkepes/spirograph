@@ -24,7 +24,7 @@ def main():
     draw = Draw(width=WIDTH, height=HEIGHT, DISPLAY=True, SAVE_IMAGE=True, BACKGROUND=BACKGROUND, LINE_WIDTH=LINE_WIDTH,
                 name=get_name(spiro.R0))
     # DYNAMIC_SHADING=True, MY_COLOUR_SCHEME=True, BIPOLAR_COLOUR_SCHEME=False,
-    x, y = spiro.update()
+    x, y = spiro.get_point()
     global POINTS, COLOURS
     POINTS += [(x, y)]
     clock = pg.time.Clock()
@@ -56,14 +56,14 @@ def main():
                 pass
         for _ in range(SPF):
             x0, y0 = x, y
-            x, y = spiro.update()
+            x, y = spiro.update(draw_rate=draw_rate)
             perimeter += ((x - x0) ** 2 + (y - y0) ** 2) ** 0.5
             if spiro.step_count % 1000 == 0:
                 print(f'perimeter = {perimeter:n}')
                 print(f'average variance = {perimeter / spiro.step_count:.2f}')
                 # print(f'average variance2 = {perimeter / spiro.t:.2f}')
             POINTS += [(x, y)]
-            colour = get_colour(spiro, colouring_scheme_type=COLOURING_SCHEME_BASE, my_colour_scheme=MY_COLOUR_SCHEME,
+            colour = get_colour(spiro, colour_scheme_type=COLOURING_SCHEME_BASE, my_colour_scheme=MY_COLOUR_SCHEME,
                                 bipolar_colour_scheme=BIPOLAR_COLOUR_SCHEME, dynamic_shading=DYNAMIC_SHADING)
             COLOURS += [colour]
             draw.draw_window(x0, y0, x, y, colour=colour, update=False) #spiro.step_count % mod == 0)

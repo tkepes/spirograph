@@ -9,10 +9,14 @@ d2sin = lambda t, a=1, b=0: a * dcos(t, a, b)
 d2cos = lambda t, a=1, b=0: -a * dsin(t, a, b)
 pi_transf = lambda t, a=1, b=0: (a * t + b) / (2 * pi) + 1 / 4
 dpi_transf = lambda t, a=1, b=0: a / (2 * pi)
-zin = lambda t, a=1, b=0: 4 * min(pi_transf(t, a, b) % 1, (-pi_transf(t, a, b)) % 1) - 1
-coz = lambda t, a=1, b=0: zin(t, a=1, b=pi / 2 + b)
-dzin = lambda t, a=1, b=0: 4 * dpi_transf(t, a, b) * np.sign(1 / 2 - pi_transf(t, a, b) % 1)
-dcoz = lambda t, a=1, b=0: dzin(t, a=1, b=pi / 2 + b)
+d2pi_transf = lambda t, a=1, b=0: 0
+zigzag = lambda t: min(t % 1, 1 - t % 1)
+dzigzag = lambda t: np.sign(1 / 2 - t % 1)
+d2zigzag = lambda t: 0
+zin = lambda t, a=1, b=0: 4 * zigzag(pi_transf(t, a, b)) - 1
+coz = lambda t, a=1, b=0: zin(t, a=a, b=pi / 2 + b)
+dzin = lambda t, a=1, b=0: 4 * dpi_transf(t, a, b) * dzigzag(pi_transf(t, a, b))
+dcoz = lambda t, a=1, b=0: dzin(t, a=a, b=pi / 2 + b)
 d2zin = lambda t, a=1, b=0: 0
 d2coz = lambda t, a=1, b=0: 0
 f = {'sin': sin, 'cos': cos, 'zin': zin, 'coz': coz}

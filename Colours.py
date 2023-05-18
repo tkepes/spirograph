@@ -3,9 +3,9 @@ from utils import normalise
 from Spirograph import Spirograph
 
 
-def get_colour(spirog: Spirograph, colour=np.array([255, 127, 0]), colouring_scheme_type='', my_colour_scheme=True,
+def get_colour(spirog: Spirograph, colour=np.array([255, 127, 0]), colour_scheme_type='', my_colour_scheme=True,
                bipolar_colour_scheme=False, dynamic_shading=True, col2=None):
-    cx, cy = colouring_scheme_type + 'x', colouring_scheme_type + 'y'
+    cx, cy = colour_scheme_type + 'x', colour_scheme_type + 'y'
     if my_colour_scheme:
         dx, dy = spirog.get_derivatives(x=cx, y=cy)
         dx, dy = normalise(dx, dy)
