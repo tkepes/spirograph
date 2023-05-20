@@ -47,7 +47,7 @@ class Params:
 SPF = 100  # steps per frame
 FPS = 20
 WIDTH, HEIGHT = 2000, 2000
-LINE_WIDTH = 1
+LINE_WIDTH = 2
 DYNAMIC_SHADING = True
 MY_COLOUR_SCHEME = True
 COLOURING_SCHEME_BASE: str = '(base+curls)_'

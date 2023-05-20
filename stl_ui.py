@@ -13,6 +13,93 @@ curves = [outer_params, base_curve_coeffs, curls_curve_coeffs, radius_curve_coef
 base_choices = ['', 'circle', 'lissajous(1, 2)', 'lissajous(3, 2)', 'lissajous(4, 3)', 'lissajous(5, 4)',
                 'lissajous(6, 5)']
 
+
+def get_base_image():
+    w, h = 300, 300
+    base_spiro = Spirograph(width=w, height=h, ADAPTIVE_RATE=ADAPTIVE_RATE, base_curve=base_curve_coeffs,
+                            base_f=(base_x, base_y), section_fact=4)
+    base_draw = MyImage(width=w, height=h, BACKGROUND=BACKGROUND, LINE_WIDTH=LINE_WIDTH)
+    x, y = base_spiro.get_point()
+    while base_spiro.t < base_spiro.per * pi + 0.1:
+        x0, y0 = x, y
+        x, y = base_spiro.update(draw_rate=draw_rate / 2)
+        colour = get_colour(base_spiro, colour_scheme_type=COLOURING_SCHEME_BASE, dynamic_shading=DYNAMIC_SHADING,
+                            my_colour_scheme=MY_COLOUR_SCHEME, bipolar_colour_scheme=BIPOLAR_COLOUR_SCHEME)
+        base_draw.line(x0, y0, x, y, colour=colour, width=3)
+    r = 2
+    for n in range(4 * base_spiro.per):
+        x, y = base_spiro.get_point(t=n * pi / base_spiro.per / 2)
+        leftUpPoint = (x - r, y - r)
+        rightDownPoint = (x + r, y + r)
+        twoPointList = [leftUpPoint, rightDownPoint]
+        base_draw.draw.ellipse(twoPointList, fill=(255, 255, 255))
+    return base_draw.im
+
+
+def get_curls_image():
+    base_per = least_multiple(least_multiple(base_curve_coeffs['a'], base_curve_coeffs['c']), 2)
+    w, h = 1000, 1000
+    # print(f'base period: {base_per}, old speed {speed}, new speed: {(speed // 1) // base_per + speed % 1}')
+    # , {round((speed // 1) // base_per + speed % 1, 2)}')
+    curls_outer_params = {'R div r': outer_params['R div r'], 'speed': round((speed // 1) // base_per + speed % 1, 2)}
+    curls_spiro = Spirograph(width=w, height=h, ADAPTIVE_RATE=ADAPTIVE_RATE, outer_params=curls_outer_params,
+                             curls=curls_curve_coeffs, curls_f=(curls_x, curls_y), section_fact=4)
+    curls_draw = MyImage(width=w, height=h, BACKGROUND=BACKGROUND, LINE_WIDTH=LINE_WIDTH)
+    x, y = curls_spiro.get_point()
+    while curls_spiro.t < curls_spiro.per * pi + 0.1:
+        x0, y0 = x, y
+        x, y = curls_spiro.update(draw_rate=draw_rate / 2)
+        colour = get_colour(curls_spiro, colour_scheme_type=COLOURING_SCHEME_BASE, dynamic_shading=DYNAMIC_SHADING,
+                            my_colour_scheme=MY_COLOUR_SCHEME, bipolar_colour_scheme=BIPOLAR_COLOUR_SCHEME)
+        curls_draw.line(x0, y0, x, y, colour=colour, width=1)
+    print(f'curls_spiro.t = {curls_spiro.t}')
+    return curls_draw.im
+
+
+def get_curls_image_closeup():
+    base_per = least_multiple(least_multiple(base_curve_coeffs['a'], base_curve_coeffs['c']), 2)
+    base_per *= max(base_curve_coeffs['a'], base_curve_coeffs['c'])
+    w_s, h_s = WIDTH, HEIGHT
+    curls_outer_params = {'R div r': outer_params['R div r'],
+                          'speed': round((2 * speed // 1) // base_per + speed % 1, 2)}
+    curls_spiro = Spirograph(width=w_s, height=h_s, ADAPTIVE_RATE=ADAPTIVE_RATE, outer_params=curls_outer_params,
+                             curls=curls_curve_coeffs, curls_f=(curls_x, curls_y), section_fact=4)
+
+    w = h = round(3 * curls_spiro.R0 / outer_params['R div r'])
+    line_width = max(round(w_s // w * LINE_WIDTH), 1)
+    print(f'width = {w}, width ratio = {w_s / w:.2f}, line width = {line_width}')
+    curls_draw = MyImage(width=w, height=h, BACKGROUND=BACKGROUND, LINE_WIDTH=line_width)
+
+    def shift(x, y):
+        return x, max(0, y - (h_s - h) // 2)
+
+    def IsOnImage(t=0):
+        x, y = curls_spiro.get_point(t=t)
+        x, y = shift(x, y)
+        return 0 <= x < w and 0 <= y < h
+
+    t_0 = pi
+    for _ in range(curls_spiro.per // 2):
+        t = t_0
+        while IsOnImage(t):
+            t -= 0.01
+        curls_spiro.t = t
+        while not IsOnImage(curls_spiro.t):
+            # x0, y0 = x, y # x, y =
+            curls_spiro.update(draw_rate=draw_rate / 2)
+        x, y = curls_spiro.get_point()
+        while IsOnImage(curls_spiro.t):
+            x0, y0 = x, y
+            x, y = curls_spiro.update(draw_rate=draw_rate / 2)
+            colour = get_colour(curls_spiro, colour_scheme_type=COLOURING_SCHEME_BASE, dynamic_shading=DYNAMIC_SHADING,
+                                my_colour_scheme=MY_COLOUR_SCHEME, bipolar_colour_scheme=BIPOLAR_COLOUR_SCHEME)
+            x0_d, y0_d = shift(x0, y0)
+            x_d, y_d = shift(x, y)
+            curls_draw.line(x0_d, y0_d, x_d, y_d, colour=colour)
+        t_0 += 2 * pi
+    return curls_draw.im
+
+
 with st.sidebar.expander('Display settings') as disp:
     st.text('Image settings')  # with st.sidebar.expander("Image settings"):
     WIDTH = st.slider('Image width', value=WIDTH, min_value=0, max_value=10000)
@@ -73,25 +160,7 @@ with st.sidebar.expander('Base curve settings') as exp1:
     DISP_BASE_CURVE = st.checkbox('Display base curve', value=False)
     base_curve_image_holder = st.empty()
     if DISP_BASE_CURVE:
-        w, h = 300, 300
-        base_spiro = Spirograph(width=w, height=h, ADAPTIVE_RATE=ADAPTIVE_RATE, base_curve=base_curve_coeffs,
-                                base_f=(base_x, base_y), section_fact=4)
-        base_draw = MyImage(width=w, height=h, BACKGROUND=BACKGROUND, LINE_WIDTH=LINE_WIDTH)
-        x, y = base_spiro.get_point()
-        while base_spiro.t < base_spiro.per * pi + 0.1:
-            x0, y0 = x, y
-            x, y = base_spiro.update(draw_rate=draw_rate / 2)
-            colour = get_colour(base_spiro, colour_scheme_type=COLOURING_SCHEME_BASE, dynamic_shading=DYNAMIC_SHADING,
-                                my_colour_scheme=MY_COLOUR_SCHEME, bipolar_colour_scheme=BIPOLAR_COLOUR_SCHEME)
-            base_draw.line(x0, y0, x, y, colour=colour, width=3)
-        r = 2
-        for n in range(4 * base_spiro.per):
-            x, y = base_spiro.get_point(t=n * pi / base_spiro.per / 2)
-            leftUpPoint = (x - r, y - r)
-            rightDownPoint = (x + r, y + r)
-            twoPointList = [leftUpPoint, rightDownPoint]
-            base_draw.draw.ellipse(twoPointList, fill=(255, 255, 255))
-        base_curve_image_holder.image(base_draw.im)
+        base_curve_image_holder.image(get_base_image())
     else:
         base_curve_image_holder.empty()
 
@@ -139,28 +208,27 @@ with st.sidebar.expander('Curls curve settings'):
             curls_curve_coeffs[param] = st.slider(param + (tag if param in 'ABac' else ''),
                                                   min_value=slider_min[param], value=curls_curve_coeffs[param],
                                                   max_value=slider_max[param], step=slider_step[param])
-
     DISP_CURLS_CURVE = st.checkbox('Display curls curve pattern', value=False)
     curls_curve_image_holder = st.empty()
     if DISP_CURLS_CURVE:
-        base_per = least_multiple(least_multiple(base_curve_coeffs['a'], base_curve_coeffs['c']), 2)
-        w, h = 300, 300
-        curls_spiro = Spirograph(width=w, height=h, ADAPTIVE_RATE=ADAPTIVE_RATE, curls_curve=curls_curve_coeffs,
-                                 curls_f=(curls_x, curls_y), section_fact=4,
-                                 outer_params={'R div r': rad_ratio, 'speed': (2 * speed) // base_per + speed % 1 })
-        curls_draw = MyImage(width=w, height=h, BACKGROUND=BACKGROUND, LINE_WIDTH=LINE_WIDTH)
-        x, y = curls_spiro.get_point()
-        while curls_spiro.t < curls_spiro.per * pi + 0.1:
-            x0, y0 = x, y
-            x, y = curls_spiro.update(draw_rate=draw_rate / 2)
-            colour = get_colour(curls_spiro, colour_scheme_type=COLOURING_SCHEME_BASE, dynamic_shading=DYNAMIC_SHADING,
-                                my_colour_scheme=MY_COLOUR_SCHEME, bipolar_colour_scheme=BIPOLAR_COLOUR_SCHEME)
-            curls_draw.line(x0, y0, x, y, colour=colour, width=2)
-        curls_curve_image_holder.image(curls_draw.im)
+        curls_curve_image_holder.image(get_curls_image_closeup())
     else:
         curls_curve_image_holder.empty()
 
 with st.sidebar.expander('Radius curve settings'):
+    rad_f = st.selectbox('radius function', func_names, index=func_names.index(rad_f))
+    radius_curve_coeffs['q'] = q = st.slider('q floor', value=round(q - q % 1), min_value=round(slider_min['q']),
+                                             max_value=round(slider_max['q'])) \
+                                   + st.slider('fractional part of q', value=round(q % 1, 2), min_value=0.0,
+                                               max_value=0.99, step=0.01)
+    radius_curve_coeffs['q'] = q
+    param = 'C'
+    c = radius_curve_coeffs[param] = st.slider(param, min_value=slider_min[param], value=radius_curve_coeffs[param],
+                                               max_value=slider_max[param], step=slider_step[param])
+    param = 'b'
+    radius_curve_coeffs[param] = pi * st.slider(param + '_rad' + ' (pi)', min_value=slider_min[param],
+                                                max_value=2.0, value=round(radius_curve_coeffs[param] / pi, 2),
+                                                step=slider_step[param])
     ORTHOGONAL_WAVES = st.checkbox(label='Use orthogonal waves effect?', value=ORTHOGONAL_WAVES)
     if ORTHOGONAL_WAVES:
         NORMALISE_WAVES = st.checkbox(label='Use constant amplitude?', value=NORMALISE_WAVES)

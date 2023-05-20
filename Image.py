@@ -31,7 +31,9 @@ class MyImage:
         if self.st_res:
             self.st_draw.rectangle((0, 0, self.st_res, self.st_height), fill=colour, outline=colour, width=2)
 
-    def line(self, x0, y0, x, y, colour=(255, 127, 0), width=2):
+    def line(self, x0, y0, x, y, colour=(255, 127, 0), width=0):
+        if width == 0:
+            width = self.line_width
         self.draw.line((x, y, x0, y0), fill=colour, width=width)  # self.line_width)
         if self.st_res:
             self.st_draw.line((self.ratio * x + self.st_margin, self.ratio * y + self.st_margin,

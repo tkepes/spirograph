@@ -24,7 +24,7 @@ class Spirograph:
         self.width, self.height = width, height
         self.ADAPTIVE_RATE = ADAPTIVE_RATE
         if base_curve is None:
-            base_curve = {'A': 1, 'a': 1, 'b': 0, 'B': 1, 'c': 1, 'd': 0}
+            base_curve = {'A': 1, 'a': 1, 'b': 0.0, 'B': 1, 'c': 1, 'd': 0.0}
         # base curve
         base_x, base_y = base_f[0], base_f[1]
         self.base_x = lambda t, A=base_curve['A'], a=base_curve['a'], b=base_curve['b']: A * f[base_x](t, a=a, b=b)
@@ -39,7 +39,7 @@ class Spirograph:
         d2f['base_x'], d2f['base_y'] = self.d2base_x, self.d2base_y
         # curls curve and radius
         if outer_params is None:
-            outer_params = {'R div r': 1, 'speed': 0}
+            outer_params = {'R div r': 1, 'speed': 0.0}
         r_scale = outer_params['R div r']
         speed = outer_params['speed']
         self.R0 = min(self.width, self.height) // 2 / (1 + 1 / r_scale)
@@ -61,7 +61,7 @@ class Spirograph:
         # self.R = lambda t: radius_curve_coeffs['R'] * ((1 - radius_curve_coeffs['C']) *
         # sin(t, a=radius_curve_coeffs['q'], b=radius_curve_coeffs['b']) + radius_curve_coeffs['C'])
         if rad_curve is None:
-            rad_curve = {'C': 1, 'q': 0, 'b': 0}
+            rad_curve = {'C': 1, 'q': 0.0, 'b': 0.0}
         if ORTHOGONAL_WAVES:
             my_norm = lambda t: 1
             if NORMALISE_WAVES:

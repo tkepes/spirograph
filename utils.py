@@ -17,6 +17,14 @@ def smallest_int_multiple(a):
     return a * b // c
 
 
+def smallest_even_multiple(a):
+    b = smallest_int_multiple(a)
+    print(a, b, b / a)
+    if round(b / a) % 2 == 1:
+        b *= 2
+    return b
+
+
 def least_multiple(a, b):
     return a * b // euclidean(a, b)
 
@@ -26,7 +34,9 @@ def get_period(*nums):
     while 0 in nums:
         nums.remove(0)
     for i in range(len(nums)):
-        nums[i] = smallest_int_multiple(nums[i])
+        if nums[i] % 1 != 0:
+            nums[i] = smallest_even_multiple(nums[i])
+    print(nums)
     while len(nums) > 1:
         j = len(nums) - 1
         while j > 0:
@@ -41,7 +51,8 @@ def get_name(spirog):
     # speed = w
     # draw_rate = t_{n+1} - t_n
     st = ('R div r = {' + (':.2f' if '.' in str(spirog.r0 / spirog.r0) else '') +
-          '}, q = {}, draw_rate = {:.2f}, speed = {:.2f}').format(spirog.r0 / spirog.r0, spirog.q, spirog.draw_rate, spirog.speed)
+          '}, q = {}, draw_rate = {:.2f}, speed = {:.2f}').format(spirog.r0 / spirog.r0, spirog.q, spirog.draw_rate,
+                                                                  spirog.speed)
     args = spirog.get_params()
     for i in range(8):
         if args[i] != 1:
