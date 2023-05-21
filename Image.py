@@ -23,6 +23,7 @@ class MyImage:
             self.st_height = round(self.ratio * self.height) + 2 * self.st_margin
             self.st_im = Image.new(mode, (self.st_res, self.st_height))
             self.st_draw = ImageDraw.Draw(self.st_im)
+        self.fill()
 
     def fill(self, colour=None):
         if colour is None:
@@ -54,4 +55,3 @@ class MyImage:
                 path = self.PATH.instant() + ' - ' + name
                 self.PATH.update(path)
             self.im.save(self.PATH + '/' + '000'[:3 - a] + str(self.stage) + ' ' + self.PATH.instant() + '.png')
-

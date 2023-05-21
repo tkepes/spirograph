@@ -35,3 +35,9 @@ funcs = {(i, key): dicts[i][key] for i in range(len(dicts)) for key in dicts[i]}
 norm0 = lambda t, x, y, p=2: np.power(x(t) ** p + y(t) ** p, 1 / p)
 norm = lambda t, x, y, p=2: norm0(t, x, y, p) if norm0(t, x, y, p) != 0 else 1
 normalise = lambda t, x, y, p=2: (x(t) / norm(t, x, y, p), y(t) / norm(t, x, y, p))
+"""
+['sin', 'cos', 'zin', 'coz', 'dsin', 'dcos', 'dzin', 'dcoz', 'd2sin', 'd2cos', 'd2zin', 'd2coz', 'base_x', 'base_y',
+ 'curls_x', 'curls_y', 'rad_x', 'rad_y', 'rad', 'x', 'y', 'dbase_x', 'dbase_y', 'dcurls_x', 'dcurls_y', 'drad_x',
+ 'drad_y', 'drad', 'dx', 'dy', 'd(base+curls)_x', 'd(base+curls)_y', 'd(base+rad)_x', 'd(base+rad)_y', 'd2base_x',
+ 'd2base_y', 'd2curls_x', 'd2curls_y', 'd2rad_x', 'd2rad_y', 'd2rad', 'd2x', 'd2y']
+"""

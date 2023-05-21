@@ -6,7 +6,7 @@ from Image import MyImage
 from Spirograph import Spirograph, pi
 from Parameters import *
 from Colours import *
-from utils import least_multiple
+from utils import least_multiple, hex_to_rgb, rgb_to_hex
 
 curve_codes = ['outer', 'b', 'c', 'r']
 curves = [outer_params, base_curve_coeffs, curls_curve_coeffs, radius_curve_coeffs]
@@ -27,12 +27,13 @@ def get_base_image():
                             my_colour_scheme=MY_COLOUR_SCHEME, bipolar_colour_scheme=BIPOLAR_COLOUR_SCHEME)
         base_draw.line(x0, y0, x, y, colour=colour, width=3)
     r = 2
-    for n in range(4 * base_spiro.per):
-        x, y = base_spiro.get_point(t=n * pi / base_spiro.per / 2)
-        leftUpPoint = (x - r, y - r)
-        rightDownPoint = (x + r, y + r)
-        twoPointList = [leftUpPoint, rightDownPoint]
-        base_draw.draw.ellipse(twoPointList, fill=(255, 255, 255))
+    if st.checkbox('show sections?', value=False):
+        for n in range(4 * base_spiro.per):
+            x, y = base_spiro.get_point(t=n * pi / base_spiro.per / 2)
+            leftUpPoint = (x - r, y - r)
+            rightDownPoint = (x + r, y + r)
+            twoPointList = [leftUpPoint, rightDownPoint]
+            base_draw.draw.ellipse(twoPointList, fill=(255 - BACKGROUND[0], 255 - BACKGROUND[1], 255 - BACKGROUND[2]))
     return base_draw.im
 
 
@@ -60,33 +61,42 @@ def get_curls_image_closeup():
     base_per = least_multiple(least_multiple(base_curve_coeffs['a'], base_curve_coeffs['c']), 2)
     base_per *= max(base_curve_coeffs['a'], base_curve_coeffs['c'])
     w_s, h_s = WIDTH, HEIGHT
-    curls_outer_params = {'R div r': outer_params['R div r'],
-                          'speed': round((2 * speed // 1) // base_per + speed % 1, 2)}
+    curls_speed = round((2 * speed // 1) // base_per + speed % 1, 2)
+    curls_outer_params = {'R div r': outer_params['R div r'], 'speed': curls_speed}
+    print(f'curls pattern outer params: {curls_outer_params}, base period {base_per}')
     curls_spiro = Spirograph(width=w_s, height=h_s, ADAPTIVE_RATE=ADAPTIVE_RATE, outer_params=curls_outer_params,
                              curls=curls_curve_coeffs, curls_f=(curls_x, curls_y), section_fact=4)
-
     w = h = round(3 * curls_spiro.R0 / outer_params['R div r'])
     line_width = max(round(w_s // w * LINE_WIDTH), 1)
     print(f'width = {w}, width ratio = {w_s / w:.2f}, line width = {line_width}')
     curls_draw = MyImage(width=w, height=h, BACKGROUND=BACKGROUND, LINE_WIDTH=line_width)
 
     def shift(x, y):
-        return x, max(0, y - (h_s - h) // 2)
+        return x, y - (h_s - h) // 2
 
     def IsOnImage(t=0):
         x, y = curls_spiro.get_point(t=t)
         x, y = shift(x, y)
         return 0 <= x < w and 0 <= y < h
 
-    t_0 = pi
-    for _ in range(curls_spiro.per // 2):
-        t = t_0
+    t = t_0 = pi
+    while curls_speed * t < 2 * curls_spiro.per * pi:
         while IsOnImage(t):
             t -= 0.01
         curls_spiro.t = t
+        x, y = curls_spiro.get_point()
         while not IsOnImage(curls_spiro.t):
-            # x0, y0 = x, y # x, y =
-            curls_spiro.update(draw_rate=draw_rate / 2)
+            # # x0, y0 = x, y # x, y =
+            # curls_spiro.update(draw_rate=draw_rate / 2)
+            x0, y0 = x, y
+            x, y = curls_spiro.update(draw_rate=draw_rate / 2)
+            if IsOnImage(curls_spiro.t):
+                colour = get_colour(curls_spiro, colour_scheme_type=COLOURING_SCHEME_BASE,
+                                    dynamic_shading=DYNAMIC_SHADING,
+                                    my_colour_scheme=MY_COLOUR_SCHEME, bipolar_colour_scheme=BIPOLAR_COLOUR_SCHEME)
+                x0_d, y0_d = shift(x0, y0)
+                x_d, y_d = shift(x, y)
+                curls_draw.line(x0_d, y0_d, x_d, y_d, colour=colour)
         x, y = curls_spiro.get_point()
         while IsOnImage(curls_spiro.t):
             x0, y0 = x, y
@@ -97,6 +107,7 @@ def get_curls_image_closeup():
             x_d, y_d = shift(x, y)
             curls_draw.line(x0_d, y0_d, x_d, y_d, colour=colour)
         t_0 += 2 * pi
+        t = t_0
     return curls_draw.im
 
 
@@ -105,6 +116,7 @@ with st.sidebar.expander('Display settings') as disp:
     WIDTH = st.slider('Image width', value=WIDTH, min_value=0, max_value=10000)
     HEIGHT = st.slider('Image height', value=HEIGHT, min_value=0, max_value=10000)
     st.text('Display settings')
+    BACKGROUND = hex_to_rgb(st.color_picker('Choose a colour for the background!', value=rgb_to_hex(BACKGROUND)))
     LINE_WIDTH = st.slider('Curve width', value=LINE_WIDTH, min_value=1, max_value=20)
     DYNAMIC_SHADING = st.checkbox(label='Use dynamic shading?', value=DYNAMIC_SHADING)
     col_ind = 0
@@ -230,8 +242,17 @@ with st.sidebar.expander('Radius curve settings'):
                                                 max_value=2.0, value=round(radius_curve_coeffs[param] / pi, 2),
                                                 step=slider_step[param])
     ORTHOGONAL_WAVES = st.checkbox(label='Use orthogonal waves effect?', value=ORTHOGONAL_WAVES)
-    if ORTHOGONAL_WAVES:
-        NORMALISE_WAVES = st.checkbox(label='Use constant amplitude?', value=NORMALISE_WAVES)
+    nw = st.empty()
+    if not ORTHOGONAL_WAVES:
+        NORMALISE_WAVES = nw.checkbox(label='Use constant amplitude?', value=NORMALISE_WAVES)
+        rad_funcs = ['sin', 'cos', 'zin', 'coz', 'dsin', 'dcos', 'dzin', 'dcoz', 'd2sin', 'd2cos', 'd2zin', 'd2coz',
+                     'base_x', 'base_y', 'curls_x', 'curls_y', 'rad', 'x', 'y', 'dbase_x', 'dbase_y', 'dcurls_x',
+                     'dcurls_y', 'drad', 'dx', 'dy', 'd(base+curls)_x', 'd(base+curls)_y', 'd(base+rad)_x',
+                     'd(base+rad)_y', 'd2base_x', 'd2base_y', 'd2curls_x', 'd2curls_y', 'd2rad', 'd2x', 'd2y']
+        rad_x = st.selectbox('rad_x', rad_funcs, index=rad_funcs.index(rad_x))
+        rad_y = st.selectbox('rad_y', rad_funcs, index=rad_funcs.index(rad_y))
+    else:
+        nw.empty()
     a, c = base_curve_coeffs['a'], base_curve_coeffs['c']
 
 # for i in range(len(curves)):
@@ -245,7 +266,7 @@ with st.sidebar.expander('Radius curve settings'):
 
 spiro = Spirograph(width=WIDTH, height=HEIGHT, ADAPTIVE_RATE=ADAPTIVE_RATE, outer_params=outer_params,
                    base_curve=base_curve_coeffs, curls=curls_curve_coeffs, rad_curve=radius_curve_coeffs,
-                   rad_f=rad_f, base_f=(base_x, base_y), curls_f=(curls_x, curls_y),
+                   rad_f=rad_f, base_f=(base_x, base_y), curls_f=(curls_x, curls_y), rad_coeffs=rad_xy_coeffs,
                    ORTHOGONAL_WAVES=ORTHOGONAL_WAVES, NORMALISE_WAVES=NORMALISE_WAVES)
 name = get_name(spiro.R0, base_x=base_x, base_y=base_y, base_curve_coeffs=base_curve_coeffs, curls_x=curls_x,
                 curls_y=curls_y, curls_curve_coeffs=curls_curve_coeffs, radius_curve_coeffs=radius_curve_coeffs,

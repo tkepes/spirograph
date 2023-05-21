@@ -18,7 +18,7 @@ def get_max(f, g, a, b):
 class Spirograph:
     def __init__(self, width=2000, height=2000, ADAPTIVE_RATE=True, outer_params=None, base_curve=None, curls=None,
                  rad_curve=None, ORTHOGONAL_WAVES=False, NORMALISE_WAVES=False, base_f=('cos', 'sin'),
-                 curls_f=('cos', 'sin'), rad_f='sin', section_fact=1, **kwargs):
+                 curls_f=('cos', 'sin'), rad_f='sin', rad_coeffs=None, section_fact=1, **kwargs):
         global f, df, d2f, d3f
         # self.f, self.df, self.d2f = f, df, d2f
         self.width, self.height = width, height
@@ -66,6 +66,7 @@ class Spirograph:
             my_norm = lambda t: 1
             if NORMALISE_WAVES:
                 my_norm = lambda t: norm(t, self.dbase_x, self.dbase_y)
+
             kk = np.sqrt(self.r0) / 2
             self.rad_x = lambda t, C=rad_curve['C'], q=rad_curve['q'], b=rad_curve['b']: self.R0 / kk * (
                     1 - C) * self.dbase_y(t) * f[rad_f](t, a=q, b=b) / my_norm(t)
@@ -153,7 +154,6 @@ class Spirograph:
             f['d' + func] = df[func]
         for func in d2f.keys():
             f['d2' + func] = d2f[func]
-
         self.t = 0.0
         self.step_count = 0
         self.perimeter = 0
@@ -165,9 +165,9 @@ class Spirograph:
             self.rate = 0.1
 
         # calculating the period of the whole curve
-        nums = (2, max(rad_curve['q'], max(1, s * speed ** exp)), base_curve['a'], base_curve['c'], curls['a'] * speed,
+        nums = (rad_curve['q'], s * speed ** exp, base_curve['a'], base_curve['c'], curls['a'] * speed,
                 curls['c'] * speed)
-        self.per = np.abs(get_period(2, max(rad_curve['q'], max(1, s * speed ** exp)), base_curve['a'], base_curve['c'],
+        self.per = np.abs(get_period(rad_curve['q'], s * speed ** exp, base_curve['a'], base_curve['c'],
                                      curls['a'] * speed, curls['c'] * speed))
         if self.per % 1 == 0:
             self.per = round(self.per)

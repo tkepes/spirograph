@@ -13,7 +13,7 @@ def main():
     # global base_curve_coeffs, curls_curve_coeffs, radius_curve_coeffs
     spiro = Spirograph(width=WIDTH, height=HEIGHT, ADAPTIVE_RATE=ADAPTIVE_RATE, outer_params=outer_params,
                        base_curve=base_curve_coeffs, curls=curls_curve_coeffs, rad_curve=radius_curve_coeffs,
-                       rad_f=rad_f, base_f=(base_x, base_y), curls_f=(curls_x, curls_y),
+                       rad_f=rad_f, base_f=(base_x, base_y), curls_f=(curls_x, curls_y), rad_coeffs=rad_xy_coeffs,
                        ORTHOGONAL_WAVES=ORTHOGONAL_WAVES, NORMALISE_WAVES=NORMALISE_WAVES)
 
     # import sympy as sp
@@ -54,22 +54,22 @@ def main():
                 # pygame.display.update()
                 pg.display.update()
                 pass
-        for _ in range(SPF):
-            x0, y0 = x, y
-            x, y = spiro.update(draw_rate=draw_rate)
-            perimeter += ((x - x0) ** 2 + (y - y0) ** 2) ** 0.5
-            if spiro.step_count % 1000 == 0:
-                print(f'perimeter = {perimeter:n}')
-                print(f'average variance = {perimeter / spiro.step_count:.2f}')
-                # print(f'average variance2 = {perimeter / spiro.t:.2f}')
-            POINTS += [(x, y)]
-            colour = get_colour(spiro, colour_scheme_type=COLOURING_SCHEME_BASE, my_colour_scheme=MY_COLOUR_SCHEME,
-                                bipolar_colour_scheme=BIPOLAR_COLOUR_SCHEME, dynamic_shading=DYNAMIC_SHADING)
-            COLOURS += [colour]
-            draw.draw_window(x0, y0, x, y, colour=colour, update=False) #spiro.step_count % mod == 0)
+        if spiro.t < spiro.per * pi:
+            for _ in range(SPF):
+                x0, y0 = x, y
+                x, y = spiro.update(draw_rate=draw_rate)
+                perimeter += ((x - x0) ** 2 + (y - y0) ** 2) ** 0.5
+                if spiro.step_count % 1000 == 0:
+                    print(f'perimeter = {perimeter:n}')
+                    print(f'average variance = {perimeter / spiro.step_count:.2f}')
+                    # print(f'average variance2 = {perimeter / spiro.t:.2f}')
+                POINTS += [(x, y)]
+                colour = get_colour(spiro, colour_scheme_type=COLOURING_SCHEME_BASE, my_colour_scheme=MY_COLOUR_SCHEME,
+                                    bipolar_colour_scheme=BIPOLAR_COLOUR_SCHEME, dynamic_shading=DYNAMIC_SHADING)
+                COLOURS += [colour]
+                draw.draw_window(x0, y0, x, y, colour=colour, update=False) #spiro.step_count % mod == 0)
         pg.display.update()
         pygame_widgets.update(events)
-        run = run and spiro.t < least_multiple(least_multiple(base_a, base_c), 2) * pi
     pg.quit()
     draw.save(name=get_name(spiro.R0), final_save=True)
 

@@ -2,26 +2,49 @@ import os
 import numpy as np
 
 
+def rgb_to_hex(rgb):
+    HEXCHARS = '0123456789ABCDEF'
+    hex = '#'
+    for c in tuple(rgb):
+        hex += HEXCHARS[round(c // 16)] + HEXCHARS[round(c % 16)]
+    # hex = f'#{HEXCHARS[round(r // 16)]}{HEXCHARS[round(r % 16)]}{HEXCHARS[round(g // 16)]}
+    #       {HEXCHARS[round(g % 16)]}{HEXCHARS[round(b // 16)]}{HEXCHARS[round(b % 16)]}'
+    return hex
+
+
+def hex_to_rgb(hex):
+    hex = hex.upper()
+    assert len(hex) == 7
+    HEXCHARS = '0123456789ABCDEF'
+    rgb = []
+    for i in range(1, len(hex), 2):
+        rgb += [(HEXCHARS.index(hex[i]) + 1) * (HEXCHARS.index(hex[i + 1]) + 1) - 1]
+    return tuple(rgb)
+
+
 def euclidean(a, b):
     while a % b != 0:
         a, b = b, a % b
     return max(1, b)
 
 
-def smallest_int_multiple(a):
+def smallest_int_multiplier(a):
     if a % 1 == 0:
-        return a
+        return 1
     decimal_places = len(str(a)) - str(a).index('.') - 1
     b = 10 ** decimal_places
     c = euclidean(round(a * b), b)
-    return a * b // c
+    return b // c
 
 
-def smallest_even_multiple(a):
-    b = smallest_int_multiple(a)
-    print(a, b, b / a)
-    if round(b / a) % 2 == 1:
-        b *= 2
+def smallest_even_multiplier(a):
+    if a % 2 == 0:
+        return 1
+    elif a % 2 == 1:
+        return 2
+    b = smallest_int_multiplier(a)
+    # print(a, b, b / a)
+    b *= b % 2 + 1
     return b
 
 
@@ -34,9 +57,8 @@ def get_period(*nums):
     while 0 in nums:
         nums.remove(0)
     for i in range(len(nums)):
-        if nums[i] % 1 != 0:
-            nums[i] = smallest_even_multiple(nums[i])
-    print(nums)
+        nums[i] = round(smallest_even_multiplier(nums[i]))
+    # print(nums)
     while len(nums) > 1:
         j = len(nums) - 1
         while j > 0:
