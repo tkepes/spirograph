@@ -6,6 +6,16 @@ from pygame.locals import *
 from Colours import get_colour
 from Parameters import *
 
+rad_ratio = 26
+outer_params['speed'] = speed = round(117.2 - 116, 2)
+outer_params['R div r'] = rad_ratio
+base_curve_coeffs['a'] = base_a = 1
+base_curve_coeffs['c'] = base_c = 1
+base_curve_coeffs['b'] = base_b = 0 * pi / 2
+base_curve_coeffs = {'A': 1, 'a': base_a, 'b': base_b, 'B': 1, 'c': base_c, 'd': 0.0}
+
+STOP_AFTER_DONE = True
+
 
 def main():
     pg.init()
@@ -14,7 +24,7 @@ def main():
     spiro = Spirograph(width=WIDTH, height=HEIGHT, ADAPTIVE_RATE=ADAPTIVE_RATE, outer_params=outer_params,
                        base_curve=base_curve_coeffs, curls=curls_curve_coeffs, rad_curve=radius_curve_coeffs,
                        rad_f=rad_f, base_f=(base_x, base_y), curls_f=(curls_x, curls_y), rad_coeffs=rad_xy_coeffs,
-                       ORTHOGONAL_WAVES=ORTHOGONAL_WAVES, NORMALISE_WAVES=NORMALISE_WAVES)
+                       ORTHOGONAL_WAVES=ORTHOGONAL_WAVES, NORMALISE_WAVES=NORMALISE_WAVES, margin=MARGIN)
 
     # import sympy as sp
     #
@@ -54,7 +64,7 @@ def main():
                 # pygame.display.update()
                 pg.display.update()
                 pass
-        if spiro.t < spiro.per * pi:
+        if not STOP_AFTER_DONE or spiro.t < spiro.per * pi:
             for _ in range(SPF):
                 x0, y0 = x, y
                 x, y = spiro.update(draw_rate=draw_rate)
@@ -67,7 +77,7 @@ def main():
                 colour = get_colour(spiro, colour_scheme_type=COLOURING_SCHEME_BASE, my_colour_scheme=MY_COLOUR_SCHEME,
                                     bipolar_colour_scheme=BIPOLAR_COLOUR_SCHEME, dynamic_shading=DYNAMIC_SHADING)
                 COLOURS += [colour]
-                draw.draw_window(x0, y0, x, y, colour=colour, update=False) #spiro.step_count % mod == 0)
+                draw.draw_window(x0, y0, x, y, colour=colour, update=False)  # spiro.step_count % mod == 0)
         pg.display.update()
         pygame_widgets.update(events)
     pg.quit()

@@ -58,18 +58,19 @@ def get_curls_image():
 
 
 def get_curls_image_closeup():
-    base_per = least_multiple(least_multiple(base_curve_coeffs['a'], base_curve_coeffs['c']), 2)
-    base_per *= max(base_curve_coeffs['a'], base_curve_coeffs['c'])
+    base_per = get_period(base_curve_coeffs['a'], base_curve_coeffs['c'])
+    base_per *= least_multiple(base_curve_coeffs['a'], base_curve_coeffs['c'])
     w_s, h_s = WIDTH, HEIGHT
     curls_speed = round((2 * speed // 1) // base_per + speed % 1, 2)
-    curls_outer_params = {'R div r': outer_params['R div r'], 'speed': curls_speed}
+    curls_outer_params = {'R div r': rad_ratio, 'speed': curls_speed}
     print(f'curls pattern outer params: {curls_outer_params}, base period {base_per}')
+    margin = 50
     curls_spiro = Spirograph(width=w_s, height=h_s, ADAPTIVE_RATE=ADAPTIVE_RATE, outer_params=curls_outer_params,
-                             curls=curls_curve_coeffs, curls_f=(curls_x, curls_y), section_fact=4)
-    w = h = round(3 * curls_spiro.R0 / outer_params['R div r'])
+                             curls=curls_curve_coeffs, curls_f=(curls_x, curls_y), section_fact=4, margin=margin)
+    w = h = 2 * margin + round(2 * curls_spiro.r0)
     line_width = max(round(w_s // w * LINE_WIDTH), 1)
     print(f'width = {w}, width ratio = {w_s / w:.2f}, line width = {line_width}')
-    curls_draw = MyImage(width=w, height=h, BACKGROUND=BACKGROUND, LINE_WIDTH=line_width)
+    curls_draw = MyImage(width=w, height=h, BACKGROUND=BACKGROUND, LINE_WIDTH=LINE_WIDTH)  # line_width)
 
     def shift(x, y):
         return x, y - (h_s - h) // 2
@@ -80,7 +81,7 @@ def get_curls_image_closeup():
         return 0 <= x < w and 0 <= y < h
 
     t = t_0 = pi
-    while curls_speed * t < 2 * curls_spiro.per * pi:
+    while curls_spiro.t < curls_spiro.per * pi:
         while IsOnImage(t):
             t -= 0.01
         curls_spiro.t = t
@@ -169,6 +170,14 @@ with st.sidebar.expander('Base curve settings') as exp1:
             base_curve_coeffs[param] = st.slider(param + (tag if param in 'ABac' else ''),
                                                  min_value=slider_min[param], value=base_curve_coeffs[param],
                                                  max_value=slider_max[param], step=slider_step[param])
+
+    if st.checkbox('Adjust speed and curls radius to base curve settings?', value=False):
+        base_per = get_period(base_curve_coeffs['a'], base_curve_coeffs['c'])
+        base_per *= least_multiple(base_curve_coeffs['a'], base_curve_coeffs['c'])
+        base_per //= 2
+        speed = round(speed % 1, 2) + base_per
+        rad_ratio = max(4, round(5.5 * np.log(base_per)))
+        outer_params = {'R div r': rad_ratio, 'speed': speed}
     DISP_BASE_CURVE = st.checkbox('Display base curve', value=False)
     base_curve_image_holder = st.empty()
     if DISP_BASE_CURVE:
@@ -289,7 +298,7 @@ def flip():
 stop_start = st.button('Pause!', 'ss', on_click=lambda: flip())
 i = 0
 pause = st.checkbox(label='Pause!!!', key='ppp', value=False)
-while spiro.t < 2 * spiro.per * pi + 0.1:
+while spiro.t < spiro.per * pi + 0.1:
     if not pause:
         x0, y0 = x, y
         x, y = spiro.update(draw_rate=draw_rate)

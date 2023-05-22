@@ -38,15 +38,104 @@ class Params:
     HEIGHT: int = 400
     BACKGROUND: tuple = (255, 255, 255)
     SPF: int = 10
-    N: int = 50
-    ALPHA: float = 0.0
-    BETA: float = 1.0
-    GAMMA: float = 0.0
+
+
+class MyParams:
+    def __init__(self, *args):
+        self.SPF = 100  # steps per frame
+        self.FPS = 20
+        self.WIDTH, self.HEIGHT = 2000, 2000
+        self.MARGIN = 20
+        self.LINE_WIDTH = 2
+        self.DYNAMIC_SHADING = True
+        self.MY_COLOUR_SCHEME = True
+        self.COLOURING_SCHEME_BASE: str = '(base+curls)_'
+        self.COLOURING_SCHEME_BASE_choices = ['curls_', 'base_', 'rad_', '(base+curls)_', '(base+rad)_']
+        # '' for the whole curve, 'curls_' for curls, 'base_' for base, 'rad_' for the radius,
+        # '(base+curls)_' for the whole curve without the radius, '(base+rad)_' for the whole curve without the curls
+        self.BIPOLAR_COLOUR_SCHEME = False
+        self.ADAPTIVE_RATE = True
+        self.BACKGROUND = (0, 0, 0)
+        self.draw_rate = 1000
+        # self.display_params = {'Width': self.WIDTH, 'Height': self.HEIGHT, 'Line width': self.LINE_WIDTH,
+        #                       'Dynamic shading': self.DYNAMIC_SHADING, 'Colouring scheme': self.COLOURING_SCHEME_BASE,
+        #                       '': self.BIPOLAR_COLOUR_SCHEME, 'Use adaptive draw_rate': self.ADAPTIVE_RATE,
+        #                       'draw_rate ': self.draw_rate, 'FPS': self.FPS, 'SPF': self.SPF}
+        self.base_x = 'cos'
+        self.base_y = 'sin'
+        self.curls_x = 'cos'
+        self.curls_y = 'sin'
+        self.rad_f = 'sin'
+        self.rad_x, self.rad_y = 'dbase_y', 'dbase_x'
+        self.rad_A, self.rad_B = -1, 1
+        self.rad_xy_coeffs = {'A': self.rad_A, 'a': 1, 'b': 0.0, 'B': self.rad_B, 'c': 1, 'd': 0.0}
+        self.ORTHOGONAL_WAVES = True
+        self.NORMALISE_WAVES = False
+        # self.f = {'base_x': self.base_x, 'base_y': self.base_y, 'curls_x': self.curls_x, 'curls_y': self.curls_y,
+        #           'rad_f': self.rad_f,
+        #           'Rad shift': self.ORTHOGONAL_WAVES, 'Normalise waves': self.NORMALISE_WAVES}
+        self.base_a = 1  # 4
+        self.base_b = 0.0
+        self.base_c = 2
+        self.base_A, self.base_B = 2, 1
+        self.base_curve_coeffs = {'A': self.base_A, 'a': self.base_a, 'b': self.base_b, 'B': self.base_B,
+                                  'c': self.base_c, 'd': 0.0}
+        self.base_per = get_period(self.base_a, self.base_c, 2)
+        self.lm = least_multiple(self.base_a, self.base_c)
+        self.speed = 7.12
+        self.rad_ratio, self.speed = 1 * 2 * (self.base_a + self.base_c), round(
+            self.base_per // 2 * (self.speed // 1) + self.speed % 1, 2)
+        # self.rad_ratio = 12  # 12
+        # self.speed = 12.05  # 7.12  # 20.05
+        # self.base_a = 5  # 4
+        # self.base_b = pi / 2
+        # self.base_c = 4  # 3
+        # self.base_A, self.base_B = 1, 1
+        # self.base_curve_coeffs = {'A': self.base_A, 'a': self.base_a, 'b': self.base_b, 'B': self.base_B,
+        #                           'c': self.base_c, 'd': 0.0}
+        # self.lm = least_multiple(self.base_a, self.base_c)
+        # self.rad_ratio, self.speed = 1 * 2 * (self.base_a + self.base_c),
+        # 3 * min((self.base_a + self.base_c), self.lm) + 0.12
+        # self.speed = 150.05
+        self.outer_params = {'R div r': self.rad_ratio, 'speed': self.speed}
+        self.q = 0.0  # 20
+        self.C = 0.5  # 0.85
+        self.radius_curve_coeffs = {'C': self.C, 'q': self.q, 'b': 0.0}  # np.pi / 2}
+        self.curls_A, self.curs_B = 1, 1
+        self.curls_curve_coeffs = {'A': self.curls_A, 'a': 1, 'b': 0.0, 'B': self.curs_B, 'c': 1, 'd': 0.0}
+        self.curves = [self.radius_curve_coeffs, self.base_curve_coeffs, self.curls_curve_coeffs]
+        if self.ORTHOGONAL_WAVES:
+            self.curve_codes = ['r', 'b', 'c']  # curve_codes = ['r_xy', 'r', 'b', 'c']
+        else:
+            self.curve_codes = ['r', 'b', 'c']
+        self.formula_params = {key + (('_' + self.curve_codes[i]) if key in 'ABabcd' else ''): self.curves[i][key] for i
+                               in range(len(self.curve_codes)) for key in self.curves[i].keys()}
+        self.defaults = {key: 0 if key[0] in 'bd' else 1 for key in self.formula_params.keys()}
+        self.defaults['q'] = 0.0
+        self.defaults['speed'] = 1.0
+        self.defaults['R div r'] = -1
+        self.defaults['C'] = 1.0
+
+        # streamlit stuff
+        self.slider_keys = list(set(key for i in range(len(self.curve_codes)) for key in self.curves[i].keys())) + list(
+            self.outer_params.keys())  # _{curve_codes[i]}
+        self.widget_types = ['slider', 'checkbox', 'selectbox']
+        self.widget_type_of = {param: 'slider' for param in self.slider_keys}
+        self.func_names = ['sin', 'cos', 'zin', 'coz']
+
+        self.slider_min = {key: .0 if key in 'bdqspeedC' else 0 for key in slider_keys}
+        self.slider_min['R div r'] = 1
+        self.slider_step = {key: 1 if key in 'ABac' else (.1 * pi if key in 'bd' else .01) for key in self.slider_keys}
+        self.slider_step['R div r'] = 1
+        self.slider_max = {key: 20 if key in 'ABac' else (2 * pi if key in 'bd' else 200.0) for key in self.slider_keys}
+        self.slider_max['R div r'] = 30
+        self.slider_max['C'] = 1.0
 
 
 SPF = 100  # steps per frame
 FPS = 20
 WIDTH, HEIGHT = 2000, 2000
+MARGIN = 20
 LINE_WIDTH = 2
 DYNAMIC_SHADING = True
 MY_COLOUR_SCHEME = True
@@ -114,7 +203,8 @@ defaults['R div r'] = -1
 defaults['C'] = 1.0
 
 # streamlit stuff
-slider_keys = list(set(key for i in range(len(curve_codes)) for key in curves[i].keys())) + list(outer_params.keys()) # _{curve_codes[i]}
+slider_keys = list(set(key for i in range(len(curve_codes)) for key in curves[i].keys())) + list(
+    outer_params.keys())  # _{curve_codes[i]}
 widget_types = ['slider', 'checkbox', 'selectbox']
 widget_type_of = {param: 'slider' for param in slider_keys}
 func_names = ['sin', 'cos', 'zin', 'coz']

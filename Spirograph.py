@@ -18,7 +18,7 @@ def get_max(f, g, a, b):
 class Spirograph:
     def __init__(self, width=2000, height=2000, ADAPTIVE_RATE=True, outer_params=None, base_curve=None, curls=None,
                  rad_curve=None, ORTHOGONAL_WAVES=False, NORMALISE_WAVES=False, base_f=('cos', 'sin'),
-                 curls_f=('cos', 'sin'), rad_f='sin', rad_coeffs=None, section_fact=1, **kwargs):
+                 curls_f=('cos', 'sin'), rad_f='sin', section_fact=1, margin = None, **kwargs):
         global f, df, d2f, d3f
         # self.f, self.df, self.d2f = f, df, d2f
         self.width, self.height = width, height
@@ -42,7 +42,10 @@ class Spirograph:
             outer_params = {'R div r': 1, 'speed': 0.0}
         r_scale = outer_params['R div r']
         speed = outer_params['speed']
-        self.R0 = min(self.width, self.height) // 2 / (1 + 1 / r_scale)
+        self.R0 = min(self.width, self.height) // 2
+        if margin is None:
+            margin = self.R0 / (r_scale + 1)
+        self.R0 -= margin
         self.r0 = self.R0 / r_scale
         if curls is None:
             curls = {'A': 0, 'a': 1, 'b': 0, 'B': 0, 'c': 1, 'd': 0}
@@ -217,7 +220,7 @@ class Spirograph:
         # ymax = max([self.y(t) for t in T])
         # ymin = max([self.y(t) for t in T])
         M = max(xmax - self.width // 2, ymax - self.height // 2, self.width // 2 - xmin, self.height // 2 - ymin)
-        rescale_factor = (min(self.width, self.height) // 2 - 50) / M
+        rescale_factor = (min(self.width, self.height) // 2 - margin) / M
         self.R0 *= rescale_factor
         self.r0 *= rescale_factor
         # self.max_base_slope, self.av_base_slope, _ = get_max(self.dbase_x, self.dbase_y, 0, get_period(base_curve['a'], base_curve['c']))

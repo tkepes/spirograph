@@ -43,8 +43,9 @@ def smallest_even_multiplier(a):
     elif a % 2 == 1:
         return 2
     b = smallest_int_multiplier(a)
-    # print(a, b, b / a)
-    b *= b % 2 + 1
+    print(a, b, b / a, end=' ')
+    b *= round(a * b) % 2 + 1
+    print(b)
     return b
 
 
