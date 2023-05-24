@@ -131,6 +131,168 @@ class MyParams:
         self.slider_max['R div r'] = 30
         self.slider_max['C'] = 1.0
 
+    def set_SPF(self, value):
+        self.SPF = value
+
+    def set_FPS(self, value):
+        self.FPS = value
+
+    def set_WIDTH(self, value):
+        self.WIDTH = value
+
+    def set_HEIGHT(self, value):
+        self.HEIGHT = value
+
+    def set_MARGIN(self, value):
+        self.MARGIN = value
+
+    def set_LINE_WIDTH(self, value):
+        self.LINE_WIDTH = value
+
+    def set_DYNAMIC_SHADING(self, value):
+        self.DYNAMIC_SHADING = value
+
+    def set_MY_COLOUR_SCHEME(self, value):
+        self.MY_COLOUR_SCHEME = value
+
+    def set_COLOURING_SCHEME_BASE(self, value):
+        self.COLOURING_SCHEME_BASE = value
+
+    def set_COLOURING_SCHEME_BASE_choices(self, value):
+        self.COLOURING_SCHEME_BASE_choices = value
+
+    def set_BIPOLAR_COLOUR_SCHEME(self, value):
+        self.BIPOLAR_COLOUR_SCHEME = value
+
+    def set_ADAPTIVE_RATE(self, value):
+        self.ADAPTIVE_RATE = value
+
+    def set_BACKGROUND(self, value):
+        self.BACKGROUND = value
+
+    def set_draw_rate(self, value):
+        self.draw_rate = value
+
+    def set_base_x(self, value):
+        self.base_x = value
+
+    def set_base_y(self, value):
+        self.base_y = value
+
+    def set_curls_x(self, value):
+        self.curls_x = value
+
+    def set_curls_y(self, value):
+        self.curls_y = value
+
+    def set_rad_f(self, value):
+        self.rad_f = value
+
+    def set_rad_x(self, value):
+        self.rad_x = value
+
+    def set_rad_y(self, value):
+        self.rad_y = value
+
+    def set_rad_A(self, value):
+        self.rad_A = value
+
+    def set_rad_B(self, value):
+        self.rad_B = value
+
+    def set_rad_xy_coeffs(self, value):
+        self.rad_xy_coeffs = value
+
+    def set_ORTHOGONAL_WAVES(self, value):
+        self.ORTHOGONAL_WAVES = value
+
+    def set_NORMALISE_WAVES(self, value):
+        self.NORMALISE_WAVES = value
+
+    def set_base_a(self, value):
+        self.base_a = value
+
+    def set_base_b(self, value):
+        self.base_b = value
+
+    def set_base_c(self, value):
+        self.base_c = value
+
+    def set_base_A(self, value):
+        self.base_A = value
+
+    def set_base_B(self, value):
+        self.base_B = value
+
+    def set_base_curve_coeffs(self, value):
+        self.base_curve_coeffs = value
+
+    def set_base_per(self, value):
+        self.base_per = value
+
+    def set_lm(self, value):
+        self.lm = value
+
+    def set_speed(self, value):
+        self.speed = value
+
+    def set_rad_ratio(self, value):
+        self.rad_ratio = value
+
+    def set_outer_params(self, value):
+        self.outer_params = value
+
+    def set_q(self, value):
+        self.q = value
+
+    def set_C(self, value):
+        self.C = value
+
+    def set_radius_curve_coeffs(self, value):
+        self.radius_curve_coeffs = value
+
+    def set_curls_A(self, value):
+        self.curls_A = value
+
+    def set_curs_B(self, value):
+        self.curs_B = value
+
+    def set_curls_curve_coeffs(self, value):
+        self.curls_curve_coeffs = value
+
+    def set_curves(self, value):
+        self.curves = value
+
+    def set_curve_codes(self, value):
+        self.curve_codes = value
+
+    def set_formula_params(self, value):
+        self.formula_params = value
+
+    def set_defaults(self, value):
+        self.defaults = value
+
+    def set_slider_keys(self, value):
+        self.slider_keys = value
+
+    def set_widget_types(self, value):
+        self.widget_types = value
+
+    def set_widget_type_of(self, value):
+        self.widget_type_of = value
+
+    def set_func_names(self, value):
+        self.func_names = value
+
+    def set_slider_min(self, value):
+        self.slider_min = value
+
+    def set_slider_step(self, value):
+        self.slider_step = value
+
+    def set_slider_max(self, value):
+        self.slider_max = value
+
 
 SPF = 100  # steps per frame
 FPS = 20
