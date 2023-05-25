@@ -65,3 +65,13 @@ streamlit interface:
 done    (3) add save button
 done    (4) (for speed) send images to streamlit with dimensions smaller than those of the ones that can be saved
     (5) fix save button
+
+
+
+Colouring
+    implement a more detailed streamlit interface
+    sin scheme:
+        make sliders for the coefficients
+        make a selectbox to choose the period to anchor the speed to
+MyFunctions
+    make a class and implement the print method

@@ -65,7 +65,12 @@ def get_period(*nums):
         while j > 0:
             nums = nums[:j - 1] + [least_multiple(nums[j], nums[j - 1])] + nums[j + 1:]
             j -= 2
-    return nums[0]
+    if len(nums) == 0:
+        nums = [1]
+    per = abs(nums[0])
+    if per % 1 == 0:
+       per = round(per)
+    return per
 
 
 def get_name(spirog):

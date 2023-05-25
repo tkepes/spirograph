@@ -1,7 +1,7 @@
 # import numpy as np
 # from  numpy import pi as pi
 import numpy as np
-from utils import get_period
+from utils import get_period, least_multiple
 from MyFunctions import *
 
 
@@ -169,13 +169,14 @@ class Spirograph:
             self.rate = 0.1
 
         # calculating the period of the whole curve
-        nums = (rad_curve['q'], s * speed ** exp, base_curve['a'], base_curve['c'], curls['a'] * speed,
-                curls['c'] * speed)
-        self.per = np.abs(get_period(rad_curve['q'], s * speed ** exp, base_curve['a'], base_curve['c'],
-                                     curls['a'] * speed, curls['c'] * speed))
-        if self.per % 1 == 0:
-            self.per = round(self.per)
-        print(f'A periódus: {self.per}pi', nums)
+        self.base_per = get_period(base_curve['a'], base_curve['c'])
+        print(f'Alap periódus: {self.base_per}pi')
+        self.curls_per = get_period(s * speed ** exp, curls['a'] * speed, curls['c'] * speed)
+        print(f'Fodor periódus: {self.curls_per}pi')
+        self.rad_per = get_period(rad_curve['q'])
+        self.per = least_multiple(least_multiple(self.rad_per, self.curls_per), self.base_per)
+        nums = (rad_curve['q'], s * speed ** exp, base_curve['a'], base_curve['c'], curls['a'] * speed, curls['c'] * speed)
+        print(f'Telses periódus: {self.per}pi', nums)
 
         # sections of the base curve
         self.section_fact = section_fact
