@@ -18,7 +18,7 @@ def get_max(f, g, a, b):
 class Spirograph:
     def __init__(self, width=2000, height=2000, ADAPTIVE_RATE=True, outer_params=None, base_curve=None, curls=None,
                  rad_curve=None, ORTHOGONAL_WAVES=False, NORMALISE_WAVES=False, base_f=('cos', 'sin'),
-                 curls_f=('cos', 'sin'), rad_f='sin', section_fact=1, margin = None, **kwargs):
+                 curls_f=('cos', 'sin'), rad_f='sin', section_fact=1, margin=None, **kwargs):
         global f, df, d2f, d3f
         # self.f, self.df, self.d2f = f, df, d2f
         self.width, self.height = width, height
@@ -150,13 +150,14 @@ class Spirograph:
         df['(base+rad)_y'] = lambda t: self.dR(t) * self.base_y(t) + self.R(t) * self.dbase_y(t) + \
                                        self.drad_y(t)
 
-        self.phi = lambda t, dx=self.dx, dy=self.dy: np.sign(dy(t)) * np.arccos(
-            dx(t) / np.sqrt(dx(t) ** 2 + dy(t) ** 2))
-
         for func in df.keys():
             f['d' + func] = df[func]
         for func in d2f.keys():
             f['d2' + func] = d2f[func]
+
+        self.phi = lambda t, x='x', y='y': np.sign(f['d' + y](t)) * np.arccos(
+            f['d' + x] / np.sqrt(f['d' + x](t) ** 2 + f['d' + y](t) ** 2))
+
         self.t = 0.0
         self.step_count = 0
         self.perimeter = 0
@@ -310,3 +311,6 @@ class Spirograph:
                 points.append((f[x](t), f[y](t)))
                 t += self.rate
         return points
+
+    def angle(self):
+        return self.phi(self.t)

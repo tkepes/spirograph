@@ -68,18 +68,18 @@ class MyParams:
         self.rad_f = 'sin'
         self.rad_x, self.rad_y = 'dbase_y', 'dbase_x'
         self.rad_A, self.rad_B = -1, 1
-        self.rad_xy_coeffs = {'A': self.rad_A, 'a': 1, 'b': 0.0, 'B': self.rad_B, 'c': 1, 'd': 0.0}
+        self.rad_xy_coeffs = {'A': self.rad_A, 'a': 1, 'b': 0., 'B': self.rad_B, 'c': 1, 'd': 0.}
         self.ORTHOGONAL_WAVES = True
         self.NORMALISE_WAVES = False
         # self.f = {'base_x': self.base_x, 'base_y': self.base_y, 'curls_x': self.curls_x, 'curls_y': self.curls_y,
         #           'rad_f': self.rad_f,
         #           'Rad shift': self.ORTHOGONAL_WAVES, 'Normalise waves': self.NORMALISE_WAVES}
         self.base_a = 1  # 4
-        self.base_b = 0.0
+        self.base_b = 0.
         self.base_c = 2
         self.base_A, self.base_B = 2, 1
         self.base_curve_coeffs = {'A': self.base_A, 'a': self.base_a, 'b': self.base_b, 'B': self.base_B,
-                                  'c': self.base_c, 'd': 0.0}
+                                  'c': self.base_c, 'd': 0.}
         self.base_per = get_period(self.base_a, self.base_c, 2)
         self.lm = least_multiple(self.base_a, self.base_c)
         self.speed = 7.12
@@ -92,17 +92,17 @@ class MyParams:
         # self.base_c = 4  # 3
         # self.base_A, self.base_B = 1, 1
         # self.base_curve_coeffs = {'A': self.base_A, 'a': self.base_a, 'b': self.base_b, 'B': self.base_B,
-        #                           'c': self.base_c, 'd': 0.0}
+        #                           'c': self.base_c, 'd': 0.}
         # self.lm = least_multiple(self.base_a, self.base_c)
         # self.rad_ratio, self.speed = 1 * 2 * (self.base_a + self.base_c),
-        # 3 * min((self.base_a + self.base_c), self.lm) + 0.12
+        # 3 * min((self.base_a + self.base_c), self.lm) + .12
         # self.speed = 150.05
         self.outer_params = {'R div r': self.rad_ratio, 'speed': self.speed}
-        self.q = 0.0  # 20
-        self.C = 0.5  # 0.85
-        self.radius_curve_coeffs = {'C': self.C, 'q': self.q, 'b': 0.0}  # np.pi / 2}
+        self.q = 0.  # 20
+        self.C = .5  # .85
+        self.radius_curve_coeffs = {'C': self.C, 'q': self.q, 'b': 0.}  # np.pi / 2}
         self.curls_A, self.curs_B = 1, 1
-        self.curls_curve_coeffs = {'A': self.curls_A, 'a': 1, 'b': 0.0, 'B': self.curs_B, 'c': 1, 'd': 0.0}
+        self.curls_curve_coeffs = {'A': self.curls_A, 'a': 1, 'b': 0., 'B': self.curs_B, 'c': 1, 'd': 0.}
         self.curves = [self.radius_curve_coeffs, self.base_curve_coeffs, self.curls_curve_coeffs]
         if self.ORTHOGONAL_WAVES:
             self.curve_codes = ['r', 'b', 'c']  # curve_codes = ['r_xy', 'r', 'b', 'c']
@@ -111,10 +111,10 @@ class MyParams:
         self.formula_params = {key + (('_' + self.curve_codes[i]) if key in 'ABabcd' else ''): self.curves[i][key] for i
                                in range(len(self.curve_codes)) for key in self.curves[i].keys()}
         self.defaults = {key: 0 if key[0] in 'bd' else 1 for key in self.formula_params.keys()}
-        self.defaults['q'] = 0.0
-        self.defaults['speed'] = 1.0
+        self.defaults['q'] = 0.
+        self.defaults['speed'] = 1.
         self.defaults['R div r'] = -1
-        self.defaults['C'] = 1.0
+        self.defaults['C'] = 1.
 
         # streamlit stuff
         self.slider_keys = list(set(key for i in range(len(self.curve_codes)) for key in self.curves[i].keys())) + list(
@@ -123,13 +123,13 @@ class MyParams:
         self.widget_type_of = {param: 'slider' for param in self.slider_keys}
         self.func_names = ['sin', 'cos', 'zin', 'coz']
 
-        self.slider_min = {key: .0 if key in 'bdqspeedC' else 0 for key in slider_keys}
+        self.slider_min = {key: 0. if key in 'bdqspeedC' else 0 for key in slider_keys}
         self.slider_min['R div r'] = 1
         self.slider_step = {key: 1 if key in 'ABac' else (.1 * pi if key in 'bd' else .01) for key in self.slider_keys}
         self.slider_step['R div r'] = 1
-        self.slider_max = {key: 20 if key in 'ABac' else (2 * pi if key in 'bd' else 200.0) for key in self.slider_keys}
+        self.slider_max = {key: 20 if key in 'ABac' else (2 * pi if key in 'bd' else 200.) for key in self.slider_keys}
         self.slider_max['R div r'] = 30
-        self.slider_max['C'] = 1.0
+        self.slider_max['C'] = 1.
 
     def set_SPF(self, value):
         self.SPF = value
@@ -321,16 +321,16 @@ curls_y = 'sin'
 rad_f = 'sin'
 rad_x, rad_y = 'dbase_y', 'dbase_x'
 rad_A, rad_B = -1, 1
-rad_xy_coeffs = {'A': rad_A, 'a': 1, 'b': 0.0, 'B': rad_B, 'c': 1, 'd': 0.0}
+rad_xy_coeffs = {'A': rad_A, 'a': 1, 'b': 0., 'B': rad_B, 'c': 1, 'd': 0.}
 ORTHOGONAL_WAVES = True
 NORMALISE_WAVES = False
 f = {'base_x': base_x, 'base_y': base_y, 'curls_x': curls_x, 'curls_y': curls_y, 'rad_f': rad_f,
      'Rad shift': ORTHOGONAL_WAVES, 'Normalise waves': NORMALISE_WAVES}
 base_a = 1  # 4
-base_b = 0.0
+base_b = 0.
 base_c = 2
 base_A, base_B = 2, 1
-base_curve_coeffs = {'A': base_A, 'a': base_a, 'b': base_b, 'B': base_B, 'c': base_c, 'd': 0.0}
+base_curve_coeffs = {'A': base_A, 'a': base_a, 'b': base_b, 'B': base_B, 'c': base_c, 'd': 0.}
 base_per = get_period(base_a, base_c, 2)
 lm = least_multiple(base_a, base_c)
 speed = 7.12
@@ -341,16 +341,16 @@ rad_ratio, speed = 1 * 2 * (base_a + base_c), round(base_per // 2 * (speed // 1)
 # base_b = pi / 2
 # base_c = 4  # 3
 # base_A, base_B = 1, 1
-# base_curve_coeffs = {'A': base_A, 'a': base_a, 'b': base_b, 'B': base_B, 'c': base_c, 'd': 0.0}
+# base_curve_coeffs = {'A': base_A, 'a': base_a, 'b': base_b, 'B': base_B, 'c': base_c, 'd': 0.}
 # lm = least_multiple(base_a, base_c)
-# rad_ratio, speed = 1 * 2 * (base_a + base_c), 3 * min((base_a + base_c), lm) + 0.12
+# rad_ratio, speed = 1 * 2 * (base_a + base_c), 3 * min((base_a + base_c), lm) + .12
 # speed = 150.05
 outer_params = {'R div r': rad_ratio, 'speed': speed}  # , 'C': C, 'q': q}
-q = 0.0  # 20
-C = 0.5  # 0.85
-radius_curve_coeffs = {'C': C, 'q': q, 'b': 0.0}  # np.pi / 2}
+q = 0.  # 20
+C = .5  # .85
+radius_curve_coeffs = {'C': C, 'q': q, 'b': 0.}  # np.pi / 2}
 curls_A, curs_B = 1, 1
-curls_curve_coeffs = {'A': curls_A, 'a': 1, 'b': 0.0, 'B': curs_B, 'c': 1, 'd': 0.0}
+curls_curve_coeffs = {'A': curls_A, 'a': 1, 'b': 0., 'B': curs_B, 'c': 1, 'd': 0.}
 curves = [radius_curve_coeffs, base_curve_coeffs, curls_curve_coeffs]
 if ORTHOGONAL_WAVES:
     curve_codes = ['r', 'b', 'c']  # curve_codes = ['r_xy', 'r', 'b', 'c']
@@ -359,10 +359,10 @@ else:
 formula_params = {key + (('_' + curve_codes[i]) if key in 'ABabcd' else ''): curves[i][key] for i in
                   range(len(curve_codes)) for key in curves[i].keys()}
 defaults = {key: 0 if key[0] in 'bd' else 1 for key in formula_params.keys()}
-defaults['q'] = 0.0
-defaults['speed'] = 1.0
+defaults['q'] = 0.
+defaults['speed'] = 1.
 defaults['R div r'] = -1
-defaults['C'] = 1.0
+defaults['C'] = 1.
 
 # streamlit stuff
 slider_keys = list(set(key for i in range(len(curve_codes)) for key in curves[i].keys())) + list(
@@ -371,13 +371,13 @@ widget_types = ['slider', 'checkbox', 'selectbox']
 widget_type_of = {param: 'slider' for param in slider_keys}
 func_names = ['sin', 'cos', 'zin', 'coz']
 
-slider_min = {key: 0.0 if key in 'bdqspeedC' else 0 for key in slider_keys}
+slider_min = {key: 0. if key in 'bdqspeedC' else 0 for key in slider_keys}
 slider_min['R div r'] = 1
-slider_step = {key: 1 if key in 'ABac' else (0.1 * pi if key in 'bd' else 0.01) for key in slider_keys}
+slider_step = {key: 1 if key in 'ABac' else (.1 * pi if key in 'bd' else .01) for key in slider_keys}
 slider_step['R div r'] = 1
-slider_max = {key: 20 if key in 'ABac' else (2 * pi if key in 'bd' else 200.0) for key in slider_keys}
+slider_max = {key: 20 if key in 'ABac' else (2 * pi if key in 'bd' else 200.) for key in slider_keys}
 slider_max['R div r'] = 30
-slider_max['C'] = 1.0
+slider_max['C'] = 1.
 
 
 # base curve choices
@@ -391,7 +391,7 @@ def get_name2(outer_params=outer_params, curves=curves, curve_codes=curve_codes,
         for key, val in curve.items():
             key += (('_' + curve_codes[i]) if key in 'ABabcd' else '')
             if val != defaults[key]:
-                name += key + (' = {' + (':.2f' if val % 1 > 0.01 else '') + '}').format(val) + ', '
+                name += key + (' = {' + (':.2f' if val % 1 > .01 else '') + '}').format(val) + ', '
     name = name[:-2]
     return name
 
