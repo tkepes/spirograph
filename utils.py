@@ -43,9 +43,9 @@ def smallest_even_multiplier(a):
     elif a % 2 == 1:
         return 2
     b = smallest_int_multiplier(a)
-    print(a, b, b / a, end=' ')
+    # print('smallest even multiplier:', a, b, b * a, end=' ')
     b *= round(a * b) % 2 + 1
-    print(b)
+    # print(b)
     return b
 
 
@@ -100,7 +100,7 @@ def get_name2(curves, codes, defaults, outer_params):
         for key, val in curve.items():
             key += (('_' + codes[i]) if key in 'ABabcd' else '')
             if val != defaults[key]:
-                name += key + (' = {' + (':.2f' if val % 1 > 0.01 else '') + '}').format(val) + ', '
+                name += key + (' = {' + (':.2f' if val % 1 > .01 else '') + '}').format(val) + ', '
     name = name[:-2]
     return name
 

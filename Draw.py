@@ -17,7 +17,7 @@ class Draw:
         self.line_width = LINE_WIDTH
         if self.SAVE_IMAGE:
             self.name = name
-            self.im = MyImage(self.width, self.height, BACKGROUND=self.BACKGROUND, name=self.name)
+            self.im = MyImage(width=self.width, height=self.height, BACKGROUND=self.BACKGROUND, name=self.name)
             self.im.fill(colour=self.BACKGROUND)
         if self.DISPLAY:
             self.DISPLAY_WIDTH = DISPLAY_WIDTH

@@ -3,12 +3,17 @@ from Path import Path
 
 
 class MyImage:
-    def __init__(self, width=1000, height=1000, mode='RGB', BACKGROUND=(0, 0, 0), LINE_WIDTH=2, name=None,
-                 st_res=0, st_margin=5):
+    def __init__(self, im=None, width=1000, height=1000, mode='RGB', BACKGROUND=(0, 0, 0), LINE_WIDTH=2, name=None,
+                 st_im=None, st_res=0, st_margin=5, path=None):
         self.PATH = Path('Images/')
-        self.width = width
-        self.height = height
-        self.im = Image.new(mode, (self.width, self.height))
+        if path is not None:
+            self.PATH.path = path
+        if im is None:
+            self.width, self.height = width, height
+            self.im = Image.new(mode, (self.width, self.height))
+        else:
+            self.im = im
+            self.width, self.height = self.im.width, self.im.height
         self.draw = ImageDraw.Draw(self.im)
         self.BACKGROUND = BACKGROUND
         self.stage = 0
@@ -17,13 +22,20 @@ class MyImage:
         self.st_res = st_res
         if self.st_res:
             self.st_margin = st_margin
-            self.st_res -= 2 * self.st_margin
-            self.ratio = st_res / max(self.width, self.height)
-            self.st_res = round(self.ratio * self.width) + 2 * self.st_margin
-            self.st_height = round(self.ratio * self.height) + 2 * self.st_margin
-            self.st_im = Image.new(mode, (self.st_res, self.st_height))
+            if st_im is not None:
+                self.st_res = st_im.width
+                self.st_height = st_im.height
+                self.ratio = (self.st_res - 2 * self.st_margin) / max(self.width, self.height)
+                self.st_im = st_im
+            else:
+                self.st_res -= 2 * self.st_margin
+                self.ratio = self.st_res / max(self.width, self.height)
+                self.st_res = round(self.ratio * self.width) + 2 * self.st_margin
+                self.st_height = round(self.ratio * self.height) + 2 * self.st_margin
+                self.st_im = Image.new(mode, (self.st_res, self.st_height))
             self.st_draw = ImageDraw.Draw(self.st_im)
-        self.fill()
+        if im is None:
+            self.fill()
 
     def fill(self, colour=None):
         if colour is None:
@@ -47,11 +59,33 @@ class MyImage:
             name = self.name
         self.stage += 1
         a = len(str(self.stage))
-        if final_save:
+        if name == 'temp':
+            self.im.save('Images/temp.png')
+            self.st_im.save('Images/temp_st.png')
+            self.stage -= 1
+        elif final_save:
             self.im.save(self.PATH + '/' + (('000'[:3 - a] + str(self.stage) + ' ') if self.stage > 1 else '') +
                          self.PATH.instant() + (' ' + name if self.stage == 1 else '') + '.png')
         else:
+            self.im.save('Images/temp.png')
+            self.st_im.save('Images/temp_st.png')
             if len(self.PATH) == 17:
                 path = self.PATH.instant() + ' - ' + name
                 self.PATH.update(path)
             self.im.save(self.PATH + '/' + '000'[:3 - a] + str(self.stage) + ' ' + self.PATH.instant() + '.png')
+
+    def get_save_name(self, name=None, final_save=False):
+        if name is None:
+            name = self.name
+        a = len(str(self.stage + 1))
+        if name == 'temp':
+            return 'Images/temp.png'
+        elif final_save:
+            return self.PATH + '/' + (
+                ('000'[:3 - a] + str(self.stage + 1) + ' ') if self.stage > 0 else '') + self.PATH.instant() + (
+                ' ' + name if self.stage == 0 else '') + '.png'
+        else:
+            if len(self.PATH) == 17:
+                path = self.PATH.instant() + ' - ' + name
+                self.PATH.update(path)
+            return self.PATH + '/' + '000'[:3 - a] + str(self.stage + 1) + ' ' + self.PATH.instant() + '.png'

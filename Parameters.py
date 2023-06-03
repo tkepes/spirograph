@@ -48,6 +48,7 @@ class MyParams:
         self.MARGIN = 20
         self.LINE_WIDTH = 2
         self.DYNAMIC_SHADING = True
+        self.FLIP_DYNAMIC_SHADING = False
         self.MY_COLOUR_SCHEME = True
         self.COLOURING_SCHEME_BASE: str = '(base+curls)_'
         self.COLOURING_SCHEME_BASE_choices = ['curls_', 'base_', 'rad_', '(base+curls)_', '(base+rad)_']
@@ -56,6 +57,7 @@ class MyParams:
         self.BIPOLAR_COLOUR_SCHEME = False
         self.ADAPTIVE_RATE = True
         self.BACKGROUND = (0, 0, 0)
+        self.sect_fact = 4
         self.draw_rate = 1000
         # self.display_params = {'Width': self.WIDTH, 'Height': self.HEIGHT, 'Line width': self.LINE_WIDTH,
         #                       'Dynamic shading': self.DYNAMIC_SHADING, 'Colouring scheme': self.COLOURING_SCHEME_BASE,
@@ -297,9 +299,11 @@ class MyParams:
 SPF = 100  # steps per frame
 FPS = 20
 WIDTH, HEIGHT = 2000, 2000
-MARGIN = 20
+MARGIN = 50
 LINE_WIDTH = 2
 DYNAMIC_SHADING = True
+FLIP_DYNAMIC_SHADING = False
+strength = .3
 MY_COLOUR_SCHEME = True
 COLOURING_SCHEME_BASE: str = '(base+curls)_'
 COLOURING_SCHEME_BASE_choices = ['curls_', 'base_', 'rad_', '(base+curls)_', '(base+rad)_']
@@ -308,12 +312,35 @@ COLOURING_SCHEME_BASE_choices = ['curls_', 'base_', 'rad_', '(base+curls)_', '(b
 BIPOLAR_COLOUR_SCHEME = False
 ADAPTIVE_RATE = True
 BACKGROUND = (0, 0, 0)  # (31, 0, 10)  # (127, 0, 31)
+sect_fact = 4
+base_sect_fact = 4
 POINTS = []
 COLOURS = []
-draw_rate = 1000
+draw_rate = min(WIDTH, HEIGHT) // 20
 display_params = {'Width': WIDTH, 'Height': HEIGHT, 'Line width': LINE_WIDTH, 'Dynamic shading': DYNAMIC_SHADING,
                   'Colouring scheme': COLOURING_SCHEME_BASE, '': BIPOLAR_COLOUR_SCHEME,
                   'Use adaptive draw_rate': ADAPTIVE_RATE, 'draw_rate ': draw_rate, 'FPS': FPS, 'SPF': SPF}
+func_names = ['sin', 'cos', 'zin', 'coz']
+coeff_names = ['A', 'B', 'a', 'c', 'b', 'd']
+coeff_labels = {key: key for key in coeff_names}
+coeff_labels['b'] = '\phi'
+coeff_labels['d'] = '\psi'
+col_setter = lambda text, col='red': f':{col}[{text}]'
+my_cols = {'red': (255, 0, 0), 'green': (0, 255, 0), 'blue': (0, 0, 255), 'yellow': (255, 255, 0), 'black': (0, 0, 0),
+           'white': (255, 255, 255)}
+coeff_cols = {**{par: 'blue' for par in 'AB'}, **{par: 'red' for par in 'ac'},
+              **{par: 'green' for par in 'bd'}, **{par: 'orange' for par in func_names}}
+# coeff_cols = {**{par: my_cols['blue'] for par in 'AB'}, **{par: my_cols['red'] for par in 'ac'},
+#               **{par: my_cols['green'] for par in 'bd'}, **{par: my_cols['yellow'] for par in func_names}}
+# par_cols = {**{par: lambda text: col_setter(text, col=str(coeff_cols[par])) for par in coeff_names},
+#             **{par: lambda text: col_setter(text, col=coeff_cols[par]) for par in func_names}}
+par_cols = {par: lambda text: col_setter(text, col=coeff_cols[par]) for par in func_names}
+par_cols['A'] = lambda text: col_setter(text, col='blue')
+par_cols['B'] = lambda text: col_setter(text, col='blue')
+par_cols['a'] = lambda text: col_setter(text, col='red')
+par_cols['c'] = lambda text: col_setter(text, col='red')
+par_cols['b'] = lambda text: col_setter(text, col=coeff_cols['b'])
+par_cols['d'] = lambda text: col_setter(text, col=coeff_cols['d'])
 base_x = 'cos'
 base_y = 'sin'
 curls_x = 'cos'
@@ -369,7 +396,6 @@ slider_keys = list(set(key for i in range(len(curve_codes)) for key in curves[i]
     outer_params.keys())  # _{curve_codes[i]}
 widget_types = ['slider', 'checkbox', 'selectbox']
 widget_type_of = {param: 'slider' for param in slider_keys}
-func_names = ['sin', 'cos', 'zin', 'coz']
 
 slider_min = {key: 0. if key in 'bdqspeedC' else 0 for key in slider_keys}
 slider_min['R div r'] = 1
@@ -424,6 +450,7 @@ def get_name(R=900, base_x=base_x, base_y=base_y, base_curve_coeffs=base_curve_c
 
     base_x_str = get_str_expr([base_curve_coeffs['A'], base_x, base_curve_coeffs['a'], 't', base_curve_coeffs['b']])
     base_y_str = get_str_expr([base_curve_coeffs['B'], base_y, base_curve_coeffs['c'], 't', base_curve_coeffs['d']])
+
     curls_x_str = get_str_expr(
         [curls_curve_coeffs['A'], curls_x, curls_curve_coeffs['a'] * speed, 't', curls_curve_coeffs['b']])
     curls_y_str = get_str_expr(
@@ -451,6 +478,96 @@ def get_name(R=900, base_x=base_x, base_y=base_y, base_curve_coeffs=base_curve_c
     else:
         name = ' -- R(t, x(t), y(t)) = R(t)(x(t), y(t))'
         rad_f_str = get_str_expr([round(R), rad_f, q, radius_curve_coeffs['b']])
+    name = f'{rad_f_str}({x_str}, {y_str})' + name
+    while '+ -' in name:
+        name = name.replace('+ -', '- ')
+    while '  ' in name:
+        name = name.replace('  ', ' ')
+    return name
+
+
+def get_name_1(R=900, base_x=base_x, base_y=base_y, base_curve_coeffs=base_curve_coeffs, curls_x=curls_x,
+               curls_y=curls_y,
+               curls_curve_coeffs=curls_curve_coeffs, radius_curve_coeffs=radius_curve_coeffs, speed=speed, q=q,
+               rad_f=rad_f):
+    operand_defaults = {'': 1, '*': 1, '/': 1, '+': 0, '-': 0, '(': '', ')': ''}
+
+    def format_for_print(a):
+        if type(a) == type(''):
+            return a
+        if a == round(a):
+            return round(a)
+        return a if len(str(a)) <= 5 else round(a, 3)
+
+    def get_str_expr(literals):
+        operands = ['', '(', '', ' + ', ')']
+        st = ''
+        if literals[0] != operand_defaults[operands[0]]:
+            st = str(format_for_print(literals[0])) + operands[0]
+        st += str(literals[1]) + operands[1]
+        if literals[2] != operand_defaults[operands[2]]:
+            st += str(format_for_print(literals[2])) + operands[2]
+        st += str(literals[3])
+        if literals[4] != operand_defaults[operands[3].strip()]:
+            st += operands[3] + str(format_for_print(literals[4]))
+        st += operands[-1]
+        return st
+
+    def str_mult(a, b, prod_char=' \cdot '):
+        if 0 in [a, b]:
+            return 0
+        elif b == 1:
+            return a
+        elif a == 1:
+            return b
+        return f'{a}{prod_char}{b}'
+
+    def str_add(a, b):
+        if b == 0:
+            return a
+        elif a == 0:
+            return b
+        elif type(b) != type('') and b < 0:
+            return f'{a} - {-b}'
+        return f'{a} + {b}'
+
+    def func_val_calc(coeffs, A='A', a='a', b='b', ff=base_x):
+        t, pi_str = 't', 'pi'
+        empty = ''
+        return f'{str_mult(coeffs[A], f"{ff}({str_add(str_mult(coeffs[a], t), str_mult(round(coeffs[b] / pi, 2), pi_str, prod_char=empty))})", prod_char=empty)}'
+
+    # base_x_str = str_mult(base_curve_coeffs['A'], base_x + '('+ str_add(str_mult(base_curve_coeffs['a'], 't'), base_curve_coeffs['b'])+')')
+
+    base_x_str = func_val_calc(base_curve_coeffs, ff=base_x)
+    base_y_str = func_val_calc(base_curve_coeffs, A='B', a='c', b='d', ff=base_y)
+    curls_x_str = func_val_calc(curls_curve_coeffs, ff=curls_x)
+    curls_y_str = func_val_calc(curls_curve_coeffs, A='B', a='c', b='d', ff=curls_y)
+    curls_x_str = str_mult(1 / rad_ratio, curls_x_str, prod_char=' * ')
+    curls_y_str = str_mult(1 / rad_ratio, curls_y_str, prod_char=' * ')
+    x_str = base_x_str + (' + ' if curls_x in ['cos', 'coz'] else ' - ') + curls_x_str
+    y_str = base_y_str + (' + ' if curls_y in ['cos', 'coz'] else ' - ') + curls_y_str
+
+    if ORTHOGONAL_WAVES:
+        name = ' -- R(t, x(t), y(t)) = R(t)(x(t) + r_x(t), y(t) + r_y(t))'
+        my_coeffs = {key: base_curve_coeffs[key] for key in base_curve_coeffs.keys()}
+        my_coeffs['A'] = -(1 - C) / 3 * base_curve_coeffs['A'] * base_curve_coeffs['a'] ** 2
+        my_coeffs['B'] = -(1 - C) / 3 * base_curve_coeffs['B'] * base_curve_coeffs['c'] ** 2
+        my_coeffs['q'] = q
+        my_coeffs['rx'] = func_val_calc(my_coeffs, ff=base_x)
+        my_coeffs['ry'] = func_val_calc(my_coeffs, A='B', a='c', b='d', ff=base_y)
+        rad_x_str = ('normed({})' if NORMALISE_WAVES else '{}').format(
+            func_val_calc(my_coeffs, A='rx', a='q', b='b', ff=rad_f))
+        rad_y_str = ('normed({})' if NORMALISE_WAVES else '{}').format(
+            func_val_calc(my_coeffs, A='ry', a='q', b='b', ff=rad_f))
+        # + (' div sqrt(square(d_2 base_x) + square(d_2 base_y))' if NORMALISE_WAVES else '')
+        x_str += (' + ' + rad_x_str if my_coeffs['A'] > 0 else ' - ' + rad_x_str[1:])
+        y_str += (' + ' + rad_y_str if my_coeffs['B'] > 0 else ' - ' + rad_y_str[1:])
+        rad_f_str = ''  # str(round(R))
+    else:
+        name = ' -- R(t, x(t), y(t)) = R(t)(x(t), y(t))'
+        my_coeffs = {'A': (1 - C), 'q': q, 'b': radius_curve_coeffs['b']}
+        rad_f_str = f'({str_add(func_val_calc(my_coeffs, a="q", ff=rad_f), C)})'
+        # str_mult(round(R),  f'({str_add(func_val_calc(my_coeffs, a="q", ff=rad_f), C)})')
     name = f'{rad_f_str}({x_str}, {y_str})' + name
     while '+ -' in name:
         name = name.replace('+ -', '- ')

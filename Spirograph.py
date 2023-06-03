@@ -18,11 +18,12 @@ def get_max(f, g, a, b):
 class Spirograph:
     def __init__(self, width=2000, height=2000, ADAPTIVE_RATE=True, outer_params=None, base_curve=None, curls=None,
                  rad_curve=None, ORTHOGONAL_WAVES=False, NORMALISE_WAVES=False, base_f=('cos', 'sin'),
-                 curls_f=('cos', 'sin'), rad_f='sin', section_fact=1, margin=None, **kwargs):
+                 curls_f=('cos', 'sin'), rad_f='sin', section_fact=1, margin=None, draw_rate=1, **kwargs):
         global f, df, d2f, d3f
         # self.f, self.df, self.d2f = f, df, d2f
         self.width, self.height = width, height
         self.ADAPTIVE_RATE = ADAPTIVE_RATE
+        self.draw_rate = draw_rate
         if base_curve is None:
             base_curve = {'A': 1, 'a': 1, 'b': 0.0, 'B': 1, 'c': 1, 'd': 0.0}
         # base curve
@@ -38,17 +39,18 @@ class Spirograph:
         df['base_x'], df['base_y'] = self.dbase_x, self.dbase_y
         d2f['base_x'], d2f['base_y'] = self.d2base_x, self.d2base_y
         # curls curve and radius
-        if outer_params is None:
-            outer_params = {'R div r': 1, 'speed': 0.0}
+        if curls is None:
+            curls = {'A': 0, 'a': 1, 'b': 0, 'B': 0, 'c': 1, 'd': 0}
+            outer_params = {'R div r': 100, 'speed': 0.0}
+        elif outer_params is None:
+            outer_params = {'R div r': 100, 'speed': 0.0}
         r_scale = outer_params['R div r']
         speed = outer_params['speed']
         self.R0 = min(self.width, self.height) // 2
         if margin is None:
-            margin = self.R0 / (r_scale + 1)
+            margin = max(self.R0 / (r_scale + 1), 50)
         self.R0 -= margin
         self.r0 = self.R0 / r_scale
-        if curls is None:
-            curls = {'A': 0, 'a': 1, 'b': 0, 'B': 0, 'c': 1, 'd': 0}
         # self.curls_x = lambda t: ribbon_curve['A'] * cos(t, a=ribbon_curve['a'], b=ribbon_curve['b'])
         # self.curls_y = lambda t: ribbon_curve['B'] * sin(t, a=ribbon_curve['c'], b=ribbon_curve['d'])
         curls_x, curls_y = curls_f[0], curls_f[1]
@@ -156,17 +158,10 @@ class Spirograph:
             f['d2' + func] = d2f[func]
 
         self.phi = lambda t, x='x', y='y': np.sign(f['d' + y](t)) * np.arccos(
-            f['d' + x] / np.sqrt(f['d' + x](t) ** 2 + f['d' + y](t) ** 2))
-
-        self.t = 0.0
+            f['d' + x](t) / np.sqrt(f['d' + x](t) ** 2 + f['d' + y](t) ** 2))
         self.step_count = 0
         self.perimeter = 0
         self.av = 1
-        # self.draw_rate = 0.03  # 31 * pi / 41  # 6 * 1e-2
-        if speed != 0:
-            self.rate = 3 * min(0.08 / speed, 0.06)
-        else:
-            self.rate = 0.1
 
         # calculating the period of the whole curve
         self.base_per = get_period(base_curve['a'], base_curve['c'])
@@ -175,7 +170,8 @@ class Spirograph:
         print(f'Fodor periódus: {self.curls_per}pi')
         self.rad_per = get_period(rad_curve['q'])
         self.per = least_multiple(least_multiple(self.rad_per, self.curls_per), self.base_per)
-        nums = (rad_curve['q'], s * speed ** exp, base_curve['a'], base_curve['c'], curls['a'] * speed, curls['c'] * speed)
+        nums = (
+            rad_curve['q'], s * speed ** exp, base_curve['a'], base_curve['c'], curls['a'] * speed, curls['c'] * speed)
         print(f'Telses periódus: {self.per}pi', nums)
 
         # sections of the base curve
@@ -183,6 +179,8 @@ class Spirograph:
         self.section_num = 1
         self.next_sect_point = self.section_num * 2 * pi / self.per / self.section_fact
         self.section_unit = 2 * pi / self.per / self.section_fact
+
+        self.t = 0.
 
         a, b = 0, self.per * pi
         b = int(round(b + 0.5))
@@ -201,13 +199,17 @@ class Spirograph:
         self.av_diff = {}
         xmax, xmin = 0, self.width
         ymax, ymin = 0, self.height
+        curv_min, curve_max = 20, 0
         for t in T:
+            curveture = self.curvature(t)
+            curv_min, curve_max = min(curv_min, curveture), max(curve_max, curveture)
             xmax, xmin = max(xmax, f['x'](t)), min(xmin, f['x'](t))
             ymax, ymin = max(ymax, f['y'](t)), min(ymin, f['y'](t))
             for g in funcs:
                 n = np.sqrt(f[g + 'x'](t) ** 2 + f[g + 'y'](t) ** 2)
                 max_norm[g] = max(max_norm[g], n)
                 av_norm[g] += n
+        self.curv_min, self.curv_max = curv_min, curve_max
         for g in max_norm.keys():
             self.max_diff[g + 'x', g + 'y'] = max_norm[g]
             self.av_diff[g + 'x', g + 'y'] = av_norm[g] / len(T)
@@ -221,10 +223,17 @@ class Spirograph:
         # xmin = min([self.x(t) for t in T])
         # ymax = max([self.y(t) for t in T])
         # ymin = max([self.y(t) for t in T])
-        M = max(xmax - self.width // 2, ymax - self.height // 2, self.width // 2 - xmin, self.height // 2 - ymin)
-        rescale_factor = (min(self.width, self.height) // 2 - margin) / M
+        self.scale = max(xmax - self.width // 2, ymax - self.height // 2, self.width // 2 - xmin,
+                         self.height // 2 - ymin)
+        rescale_factor = (min(self.width, self.height) // 2 - margin) / self.scale
         self.R0 *= rescale_factor
         self.r0 *= rescale_factor
+        self.delta_max = min(self.R0 / 20, 100)
+        # self.draw_rate = 0.03  # 31 * pi / 41  # 6 * 1e-2
+        if speed != 0:
+            self.rate = 3 * min(0.08 / speed, 0.06) * self.draw_rate / self.scale / 100
+        else:
+            self.rate = 0.1
         # self.max_base_slope, self.av_base_slope, _ = get_max(self.dbase_x, self.dbase_y, 0, get_period(base_curve['a'], base_curve['c']))
         # self.max_curls_slope, self.av_curls_slope, _ = get_max(self.dcurls_x, self.dcurls_y, 0, round(
         #     get_period(curls['a'], curls['c']) * speed) * pi)
@@ -239,13 +248,34 @@ class Spirograph:
         # self.max_diff['rad_x', 'rad_y'] = self.max_rad_slope
         # self.max_diff['(base+rad)_x', '(base+rad)_y'] = max(self.max_base_slope, self.max_rad_slope)
 
+    @property
+    def t(self):
+        return self._t
+
+    @t.setter
+    def t(self, value):
+        self._t = value
+        self.section_num = round(self.per * self.section_fact * self.t // 2 * pi) + 1
+        self.next_sect_point = self.section_num * 2 * pi / self.per / self.section_fact
+
     def get_point(self, x='x', y='y', pref='', t=None):
         global f
         if t is None:
             t = self.t
         return f[pref + x](t), f[pref + y](t)
 
-    def update(self, x='x', y='y', pref='d', draw_rate=1000):
+    def curvature(self, t, x='x', y='y'):
+        # global f
+        return abs(f['d' + x](t) * f['d2' + y](t) - f['d2' + x](t) * f['d' + y](t)) / np.sqrt(
+            f['d' + x](self.t) ** 2 + f['d' + y](self.t) ** 2) ** 3
+
+    def update_core(self):
+        return max(1e-6, np.exp(-self.curvature(self.t)))
+
+    def update_core2(self):
+        return max(1. - min(1, ((self.curvature(self.t)) / (self.curv_max + 2)) ** 5e-1), 1e-2)
+
+    def update(self, x='x', y='y', pref='d'):
         global f
         target = 10
         self.step_count += 1
@@ -255,9 +285,11 @@ class Spirograph:
             # delta = min(1, 2 * np.sqrt(f[px](self.t) ** 2 + f[py](self.t) ** 2) /
             #             (self.max_diff[px, py] + self.av_diff[px, py]))
             delta = np.sqrt(f[px](self.t) ** 2 + f[py](self.t) ** 2) / (self.max_diff[px, py]) ** 1.5
+            # print(f'{self.curvature(x, y):.2f}')
+            delta = self.update_core2()
             # delta = delta ** 0.5
-            if delta >= 1:
-                print(f'delta >= 1: {self.t:.2f}, {np.sqrt(f[px](self.t) ** 2 + f[py](self.t) ** 2):.2f}')
+            if delta > 1 + 1e-8:
+                print(f'delta = {delta} > 1: {self.t:.2f}, {np.sqrt(f[px](self.t) ** 2 + f[py](self.t) ** 2):.2f}')
                 print(f'{self.next_sect_point:.2f}, {self.section_num}')
             # delta = (delta ** 0.04) / max(np.power(self.per, 0.8), 100)  # 100
             # print(round(delta, 3))
@@ -265,7 +297,12 @@ class Spirograph:
             #         2 * pi) > 0.05 * pi:
             #     # print(f'{delta}, {self.phi(self.t + delta, dx=f[px], dy=f[py]) - self.phi(self.t, dx=f[px], dy=f[py]):.2f}')
             #     delta /= 2
-            self.t += delta * self.av * draw_rate / 1000  # /100# * self.av  # + self.t / (self.av * self.step_count)
+            delta *= self.draw_rate / self.scale / 10
+            # delta *= self.av * draw_rate / 1000  # /100# * self.av  # + self.t / (self.av * self.step_count)
+            # d = np.sqrt((f[x](self.t) - f[x](self.t + delta)) ** 2 + (f[y](self.t) - f[y](self.t + delta)) ** 2)
+            # if d > self.delta_max:
+            #     delta *= self.delta_max / d
+            self.t += delta
         else:
             self.t += self.rate
         # to enforce proper colour changes at visible points
@@ -283,16 +320,6 @@ class Spirograph:
         if t is None:
             t = self.t
         return df[x](t), df[y](t)
-
-    def get_base_derivatives(self, t=None):
-        if t is None:
-            t = self.t
-        return self.dbase_x(t), self.dbase_y(t)
-
-    def get_curls_derivatives(self, t):
-        if t is None:
-            t = self.t
-        return self.dcurls_x(t), self.dcurls_y(t)
 
     def get_max_diff(self, x='x', y='y'):
         return self.max_diff[x, y]

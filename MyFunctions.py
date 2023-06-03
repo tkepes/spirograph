@@ -41,3 +41,55 @@ normalise = lambda t, x, y, p=2: (x(t) / norm(t, x, y, p), y(t) / norm(t, x, y, 
  'drad_y', 'drad', 'dx', 'dy', 'd(base+curls)_x', 'd(base+curls)_y', 'd(base+rad)_x', 'd(base+rad)_y', 'd2base_x',
  'd2base_y', 'd2curls_x', 'd2curls_y', 'd2rad_x', 'd2rad_y', 'd2rad', 'd2x', 'd2y']
 """
+
+
+class Func:
+    def __init__(self, f=sin, name='', a: int = 1, b: float = 0.):
+        self.f = f
+        self.name = name
+        self.a = a
+        if len(str(b)) > 1 and str(b)[-2:] == '.0':
+            b = round(b)
+        self.b = b
+        st = ''
+        if self.a != 0:
+            if self.a != 1:
+                st = f'{self.a}t'
+            else:
+                st = 't'
+        if self.b != 0:
+            if self.b < 0:
+                if st != '':
+                    st += ' '
+                st += f'- {-self.b}'
+            else:
+                if st == '':
+                    st = str(self.b)
+                else:
+                    st += f' + {self.b}'
+        self.name += f'({st})'
+
+    def __str__(self):
+        return self.name
+
+
+def print_(name='', a: int = 1, b: float = 0.):
+    if len(str(b)) > 1 and str(b)[-2:] == '.0':
+        b = round(b)
+    st = ''
+    if a != 0:
+        if a != 1:
+            st = f'{a}t'
+        else:
+            st = 't'
+    if b != 0:
+        if b < 0:
+            if st != '':
+                st += ' '
+            st += f'- {-b}'
+        else:
+            if st == '':
+                st = str(b)
+            else:
+                st += f' + {b}'
+    name += f'({st})'
