@@ -71,9 +71,19 @@ def stretch(col):
 
 def get_colour(spiro: Spirograph, colour=np.array([255, 127, 0]), colour_scheme_type='', my_colour_scheme=True,
                bipolar_colour_scheme=False, dynamic_shading=True, flip_dsh=False, col2=None, NORM=False,
-               FROM_ZERO=False, perm=None, strength=0.3):
+               FROM_ZERO=False, perm=None, strength=0.3, test_line_lengths=False, ind=0, curvature_test=False, lim1=0,
+               lim2=20, curvature=0):
     cx, cy = colour_scheme_type + 'x', colour_scheme_type + 'y'
-
+    if test_line_lengths:
+        if ind % 2 == 0:
+            return (255, 0, 0)
+        return (0, 0, 255)
+    if curvature_test:
+        if curvature < lim1:
+            return (255, 255, 255)
+        elif curvature < lim2:
+            return (255, 0, 0)
+        return (0, 0, 255)
     if my_colour_scheme:
         colour = diff_scheme(spiro, cx, cy, sin)
         colour -= np.min(colour)

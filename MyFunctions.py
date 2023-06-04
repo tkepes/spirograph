@@ -19,6 +19,8 @@ dzin = lambda t, a=1, b=0: 4 * dpi_transf(t, a, b) * dzigzag(pi_transf(t, a, b))
 dcoz = lambda t, a=1, b=0: dzin(t, a=a, b=pi / 2 + b)
 d2zin = lambda t, a=1, b=0: 0
 d2coz = lambda t, a=1, b=0: 0
+sigmoid = lambda t: 1 / (1 + np.exp(-t))
+
 f = {'sin': sin, 'cos': cos, 'zin': zin, 'coz': coz}
 df = {'sin': dsin, 'cos': dcos, 'zin': dzin, 'coz': dcoz}
 d2f = {'sin': d2sin, 'cos': d2cos, 'zin': d2zin, 'coz': d2coz}

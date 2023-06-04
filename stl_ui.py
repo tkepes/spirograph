@@ -1,6 +1,7 @@
 import os
 from datetime import datetime as dt
 import numpy as np
+import pandas as pd
 # import sys
 # sys.path.insert(0, '.')
 import streamlit as st
@@ -176,8 +177,7 @@ with st.sidebar.expander('Display settings') as disp:
     FPS = st.slider(label='FPS', value=FPS, min_value=0, max_value=30)
     SPF = st.slider(label='SPF', value=SPF, min_value=1, max_value=1000)
     ADAPTIVE_RATE = st.checkbox(label='Adaptive drawing rate', value=ADAPTIVE_RATE)
-    draw_rate = st.slider(label='drawing rate coefficient', value=draw_rate, min_value=1,
-                          max_value=5 * min(WIDTH, HEIGHT) // 2)
+    draw_rate_ = st.empty()
 
 with st.sidebar.expander('Base curve settings') as exp1:
     base_text = 'Base(t) = (A base_x(a t + b), B base_y(c t + d))'
@@ -376,6 +376,7 @@ with st.sidebar.expander('Radius curve settings'):
         radius_curve_coeffs[param] = pi * st.slider(param + '_rad' + ' (pi)', min_value=slider_min[param],
                                                     max_value=2., value=round(radius_curve_coeffs[param] / pi, 1),
                                                     step=.1)
+        rad_choices = ['center', 'orthogonal']
         ORTHOGONAL_WAVES = st.checkbox(label='Orthogonal waves', value=ORTHOGONAL_WAVES)
         nw = st.empty()
         if ORTHOGONAL_WAVES:
@@ -389,7 +390,6 @@ with st.sidebar.expander('Radius curve settings'):
         else:
             nw.empty()
 
-
 # for i in range(len(curves)):
 #     curve = curves[i]
 # #     if curve_codes[i] in 'bc':
@@ -399,14 +399,27 @@ with st.sidebar.expander('Radius curve settings'):
 #                                          value=curve[param], min_value=slider_min[param], max_value=slider_max[param],
 #                                          step=slider_step[param])
 
+
+lim_max = 500
+lim1 = st.empty()  # slider('red curvture min', key='rcmn', value=20, max_value=lim_max)
+lim2 = st.empty()  # slider('red curvture max', key='rcmx', value=20, min_value=lim1, max_value=lim_max)
+
+
 # @st.cache_data
-@st.cache_data
 def draw_curve(**kwargs):
     spiro = Spirograph(width=WIDTH, height=HEIGHT, ADAPTIVE_RATE=ADAPTIVE_RATE, outer_params=outer_params,
-                       base_curve=base_curve_coeffs, curls=my_curls, rad_curve=radius_curve_coeffs, draw_rate=draw_rate,
+                       base_curve=base_curve_coeffs, curls=my_curls, rad_curve=radius_curve_coeffs, draw_rate=None,
                        rad_f=rad_f, base_f=(base_x, base_y), curls_f=(curls_x, curls_y), rad_coeffs=rad_xy_coeffs,
                        ORTHOGONAL_WAVES=ORTHOGONAL_WAVES, NORMALISE_WAVES=NORMALISE_WAVES, section_fact=sect_fact)
+    scale = round(spiro.scale)
+    spiro.draw_rate = draw_rate_.slider(label='drawing rate coefficient', value=scale, min_value=1,
+           max_value=100 * scale)
+
     pause = False
+    global lim_max
+    lim_max = round(spiro.curv_max) + 1
+    lim_1 = lim1.slider('red curvture min', value=20, max_value=lim_max)
+    lim_2 = lim2.slider('red curvture max', value=lim_1, min_value=lim_1, max_value=lim_max)
 
     def from_temp():
         if 'temp.png' in os.listdir(os.getcwd() + '/Images/'):
@@ -513,12 +526,13 @@ def draw_curve(**kwargs):
         global x, y, i
         if not pause:
             x0, y0 = x, y
+            curvature = spiro.curvature(spiro.t)
             x, y = spiro.update()
-            # colour = get_colour(spiro, colour_scheme_type=COLOURING_SCHEME_BASE, my_colour_scheme=MY_COLOUR_SCHEME,
-            #                     bipolar_colour_scheme=BIPOLAR_COLOUR_SCHEME, dynamic_shading=DYNAMIC_SHADING,
-            #                     flip_dsh=FLIP_DYNAMIC_SHADING, strength=strength)
-            colour = [(255, 0, 0), (0, 0, 255)][i % 2]
-            # colour = [(0, 0, 0), (255, 255, 255)][i % 2]
+            colour = get_colour(spiro, colour_scheme_type=COLOURING_SCHEME_BASE, my_colour_scheme=MY_COLOUR_SCHEME,
+                                bipolar_colour_scheme=BIPOLAR_COLOUR_SCHEME, dynamic_shading=DYNAMIC_SHADING,
+                                flip_dsh=FLIP_DYNAMIC_SHADING, strength=strength,
+                                test_line_lengths=True, ind=i,
+                                curvature_test=False, lim1=lim_1, lim2=lim_2, curvature=curvature)
             draw.line(x0, y0, x, y, colour=colour, width=LINE_WIDTH)
             if i % SPF == 0:
                 image_holder.image(draw.st_im)
@@ -555,5 +569,5 @@ draw_curve(width=WIDTH, height=HEIGHT, ADAPTIVE_RATE=ADAPTIVE_RATE, outer_params
            section_fact=sect_fact, BACKGROUND=BACKGROUND, LINE_WIDTH=LINE_WIDTH,
            colour_scheme_type=COLOURING_SCHEME_BASE,
            my_colour_scheme=MY_COLOUR_SCHEME, bipolar_colour_scheme=BIPOLAR_COLOUR_SCHEME,
-           dynamic_shading=DYNAMIC_SHADING, draw_rate=draw_rate,
-           flip_dsh=FLIP_DYNAMIC_SHADING, strength=strength)
+           dynamic_shading=DYNAMIC_SHADING, draw_rate=draw_rate_,
+           flip_dsh=FLIP_DYNAMIC_SHADING, strength=strength, lim1=lim1, lim2=lim2)

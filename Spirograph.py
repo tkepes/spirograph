@@ -1,6 +1,8 @@
 # import numpy as np
 # from  numpy import pi as pi
 import numpy as np
+import pandas as pd
+
 from utils import get_period, least_multiple
 from MyFunctions import *
 
@@ -23,7 +25,6 @@ class Spirograph:
         # self.f, self.df, self.d2f = f, df, d2f
         self.width, self.height = width, height
         self.ADAPTIVE_RATE = ADAPTIVE_RATE
-        self.draw_rate = draw_rate
         if base_curve is None:
             base_curve = {'A': 1, 'a': 1, 'b': 0.0, 'B': 1, 'c': 1, 'd': 0.0}
         # base curve
@@ -177,6 +178,7 @@ class Spirograph:
         # sections of the base curve
         self.section_fact = section_fact
         self.section_num = 1
+        self.last_sect_point = 0.
         self.next_sect_point = self.section_num * 2 * pi / self.per / self.section_fact
         self.section_unit = 2 * pi / self.per / self.section_fact
 
@@ -200,8 +202,10 @@ class Spirograph:
         xmax, xmin = 0, self.width
         ymax, ymin = 0, self.height
         curv_min, curve_max = 20, 0
+        self.curvatures = []
         for t in T:
             curveture = self.curvature(t)
+            self.curvatures.append({'t': t, 'curvature': curveture})
             curv_min, curve_max = min(curv_min, curveture), max(curve_max, curveture)
             xmax, xmin = max(xmax, f['x'](t)), min(xmin, f['x'](t))
             ymax, ymin = max(ymax, f['y'](t)), min(ymin, f['y'](t))
@@ -209,7 +213,6 @@ class Spirograph:
                 n = np.sqrt(f[g + 'x'](t) ** 2 + f[g + 'y'](t) ** 2)
                 max_norm[g] = max(max_norm[g], n)
                 av_norm[g] += n
-        self.curv_min, self.curv_max = curv_min, curve_max
         for g in max_norm.keys():
             self.max_diff[g + 'x', g + 'y'] = max_norm[g]
             self.av_diff[g + 'x', g + 'y'] = av_norm[g] / len(T)
@@ -225,15 +228,21 @@ class Spirograph:
         # ymin = max([self.y(t) for t in T])
         self.scale = max(xmax - self.width // 2, ymax - self.height // 2, self.width // 2 - xmin,
                          self.height // 2 - ymin)
+        if draw_rate is None:
+            self.draw_rate = self.scale
+        dfr = pd.DataFrame(self.curvatures)
+        dfr.to_pickle('curvature.pickle')
+        self.curv_min, self.curv_max = curv_min, curve_max
+        self.curv_limit = 200
+        print(f'curvature max, min = {curve_max:.2f}, {curv_min:.2f},\n scale = {self.scale}')
         rescale_factor = (min(self.width, self.height) // 2 - margin) / self.scale
         self.R0 *= rescale_factor
         self.r0 *= rescale_factor
-        self.delta_max = min(self.R0 / 20, 100)
         # self.draw_rate = 0.03  # 31 * pi / 41  # 6 * 1e-2
-        if speed != 0:
-            self.rate = 3 * min(0.08 / speed, 0.06) * self.draw_rate / self.scale / 100
-        else:
-            self.rate = 0.1
+        self.rate = self.draw_rate / self.scale / 10
+        self.delta_max = 10 / self.scale
+        self.delta_min = 1 / self.scale / 10
+        print(f'delta max, min = {self.delta_max:.4f}, {self.delta_min:.6f}')
         # self.max_base_slope, self.av_base_slope, _ = get_max(self.dbase_x, self.dbase_y, 0, get_period(base_curve['a'], base_curve['c']))
         # self.max_curls_slope, self.av_curls_slope, _ = get_max(self.dcurls_x, self.dcurls_y, 0, round(
         #     get_period(curls['a'], curls['c']) * speed) * pi)
@@ -257,6 +266,7 @@ class Spirograph:
         self._t = value
         self.section_num = round(self.per * self.section_fact * self.t // 2 * pi) + 1
         self.next_sect_point = self.section_num * 2 * pi / self.per / self.section_fact
+        self.last_sect_point = (self.section_num - 1) * 2 * pi / self.per / self.section_fact
 
     def get_point(self, x='x', y='y', pref='', t=None):
         global f
@@ -266,8 +276,9 @@ class Spirograph:
 
     def curvature(self, t, x='x', y='y'):
         # global f
+        # (x'y'' - x''y')/(x'**2 + y'**2)**(3/2)
         return abs(f['d' + x](t) * f['d2' + y](t) - f['d2' + x](t) * f['d' + y](t)) / np.sqrt(
-            f['d' + x](self.t) ** 2 + f['d' + y](self.t) ** 2) ** 3
+            f['d' + x](self.t) ** 2 + f['d' + y](self.t) ** 2) ** 1.5
 
     def update_core(self):
         return max(1e-6, np.exp(-self.curvature(self.t)))
@@ -275,45 +286,67 @@ class Spirograph:
     def update_core2(self):
         return max(1. - min(1, ((self.curvature(self.t)) / (self.curv_max + 2)) ** 5e-1), 1e-2)
 
-    def update(self, x='x', y='y', pref='d'):
-        global f
-        target = 10
+    def delta(self):
+        delta = min(self.curvature(self.t), self.curv_limit) / self.curv_limit
+        delta = 12 * (0.5 - delta)
+        delta = sigmoid(delta)
+        # for i in range(1):
+        #     delta = 12 * (-1) ** i * (0.5 - delta)
+        #     delta = sigmoid(delta)
+        delta = (delta + self.delta_min) / (1 - self.delta_min)
+        delta = min(max(delta ** 1, self.delta_min), self.delta_max)
+        return delta
+
+    def update_(self, x='x', y='y'):
         self.step_count += 1
-        x0, y0 = f[x](self.t), f[y](self.t)
+        # self.curvatures.append({'t': self.t, 'delta': delta, 'curvature': self.curvature(self.t)})
+        # delta *= self.draw_rate / self.scale / 10
+        # print(f't = {self.t:.2f}, delta = {delta:.4f}')
+        self.t += self.delta()
+        return f[x](self.t), f[y](self.t)
+
+    def update(self, x='x', y='y', pref='d'):
+        # target = 10
+        self.step_count += 1
         if self.ADAPTIVE_RATE:
-            px, py = pref + x, pref + y
-            # delta = min(1, 2 * np.sqrt(f[px](self.t) ** 2 + f[py](self.t) ** 2) /
-            #             (self.max_diff[px, py] + self.av_diff[px, py]))
-            delta = np.sqrt(f[px](self.t) ** 2 + f[py](self.t) ** 2) / (self.max_diff[px, py]) ** 1.5
-            # print(f'{self.curvature(x, y):.2f}')
-            delta = self.update_core2()
-            # delta = delta ** 0.5
-            if delta > 1 + 1e-8:
-                print(f'delta = {delta} > 1: {self.t:.2f}, {np.sqrt(f[px](self.t) ** 2 + f[py](self.t) ** 2):.2f}')
-                print(f'{self.next_sect_point:.2f}, {self.section_num}')
-            # delta = (delta ** 0.04) / max(np.power(self.per, 0.8), 100)  # 100
-            # print(round(delta, 3))
-            # while np.abs((self.phi(self.t + delta, dx=f[px], dy=f[py]) - self.phi(self.t, dx=f[px], dy=f[py]))) % (
-            #         2 * pi) > 0.05 * pi:
-            #     # print(f'{delta}, {self.phi(self.t + delta, dx=f[px], dy=f[py]) - self.phi(self.t, dx=f[px], dy=f[py]):.2f}')
-            #     delta /= 2
-            delta *= self.draw_rate / self.scale / 10
+            # px, py = pref + x, pref + y
+            # # delta = min(1, 2 * np.sqrt(f[px](self.t) ** 2 + f[py](self.t) ** 2) /
+            # #             (self.max_diff[px, py] + self.av_diff[px, py]))
+            # delta = np.sqrt(f[px](self.t) ** 2 + f[py](self.t) ** 2) / (self.max_diff[px, py]) ** 1.5
+            # # print(f'{self.curvature(x, y):.2f}')
+            # delta = self.update_core2()
+            # # delta = delta ** 0.5
+            # if delta > 1 + 1e-8:
+            #     print(f'delta = {delta} > 1: {self.t:.2f}, {np.sqrt(f[px](self.t) ** 2 + f[py](self.t) ** 2):.2f}')
+            #     print(f'{self.next_sect_point:.2f}, {self.section_num}')
+            # # delta = (delta ** 0.04) / max(np.power(self.per, 0.8), 100)  # 100
+            # # print(round(delta, 3))
+            # # while np.abs((self.phi(self.t + delta, dx=f[px], dy=f[py]) - self.phi(self.t, dx=f[px], dy=f[py]))) % (
+            # #         2 * pi) > 0.05 * pi:
+            # #     # print(f'{delta}, {self.phi(self.t + delta, dx=f[px], dy=f[py]) - self.phi(self.t, dx=f[px], dy=f[py]):.2f}')
+            # #     delta /= 2
+            # delta *= self.draw_rate / self.scale / 10
             # delta *= self.av * draw_rate / 1000  # /100# * self.av  # + self.t / (self.av * self.step_count)
             # d = np.sqrt((f[x](self.t) - f[x](self.t + delta)) ** 2 + (f[y](self.t) - f[y](self.t + delta)) ** 2)
             # if d > self.delta_max:
             #     delta *= self.delta_max / d
+            delta = self.delta() * self.draw_rate / self.scale
+            if self.last_sect_point - self.delta_min <= self.t <= self.last_sect_point + self.delta_min:
+                delta = self.delta_min / 10
             self.t += delta
         else:
-            self.t += self.rate
+            self.t += self.rate * self.draw_rate / self.scale
         # to enforce proper colour changes at visible points
         if self.t > self.next_sect_point:
             self.t = self.next_sect_point
+            self.last_sect_point = self.next_sect_point
             self.section_num += 1
             self.next_sect_point = self.section_num * 2 * pi / self.per / self.section_fact
-        if x + y == 'xy':
-            x1, y1 = f[x](self.t), f[y](self.t)
-            self.perimeter += np.sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2)
-            self.av = target * self.step_count / self.perimeter  # target * self.t / self.perimeter
+        # if x + y == 'xy':
+        #     x0, y0 = f[x](self.t), f[y](self.t)
+        #     x1, y1 = f[x](self.t), f[y](self.t)
+        #     self.perimeter += np.sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2)
+        #     self.av = target * self.step_count / self.perimeter  # target * self.t / self.perimeter
         return f[x](self.t), f[y](self.t)
 
     def get_derivatives(self, t=None, x='x', y='y'):
