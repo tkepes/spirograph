@@ -1,6 +1,6 @@
 from PIL import Image, ImageDraw
 from Path import Path
-
+from Name import Name
 
 class MyImage:
     def __init__(self, im=None, width=1000, height=1000, mode='RGB', BACKGROUND=(0, 0, 0), LINE_WIDTH=2, name=None,
@@ -54,25 +54,15 @@ class MyImage:
                               fill=colour, width=width)
 
     def save(self, name=None, final_save=False):  # name = parameters_string()
-        # self.PATH.reset()
         if name is None:
             name = self.name
-        self.stage += 1
-        a = len(str(self.stage))
         if name == 'temp':
             self.im.save('Images/temp.png')
-            self.st_im.save('Images/temp_st.png')
-            self.stage -= 1
-        elif final_save:
-            self.im.save(self.PATH + '/' + (('000'[:3 - a] + str(self.stage) + ' ') if self.stage > 1 else '') +
-                         self.PATH.instant() + (' ' + name if self.stage == 1 else '') + '.png')
+            if self.st_res:
+                self.st_im.save('Images/temp_st.png')
         else:
-            self.im.save('Images/temp.png')
-            self.st_im.save('Images/temp_st.png')
-            if len(self.PATH) == 17:
-                path = self.PATH.instant() + ' - ' + name
-                self.PATH.update(path)
-            self.im.save(self.PATH + '/' + '000'[:3 - a] + str(self.stage) + ' ' + self.PATH.instant() + '.png')
+            name, self.stage = Name(self.PATH).get_name(name, self.stage, final_save)
+            self.im.save(name)
 
     def get_save_name(self, name=None, final_save=False):
         if name is None:

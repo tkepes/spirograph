@@ -4,7 +4,7 @@ from datetime import datetime as dt
 
 # def create_folder(directory):
 #     try:
-#         if not os.path.exists(directory):
+#         if not os.PATH.exists(directory):
 #             os.makedirs(directory)
 #     except OSError:
 #         print('Error: Creating directory. ' + directory)

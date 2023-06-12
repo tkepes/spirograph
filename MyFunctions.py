@@ -20,6 +20,7 @@ dcoz = lambda t, a=1, b=0: dzin(t, a=a, b=pi / 2 + b)
 d2zin = lambda t, a=1, b=0: 0
 d2coz = lambda t, a=1, b=0: 0
 sigmoid = lambda t: 1 / (1 + np.exp(-t))
+null = lambda t: 0
 
 f = {'sin': sin, 'cos': cos, 'zin': zin, 'coz': coz}
 df = {'sin': dsin, 'cos': dcos, 'zin': dzin, 'coz': dcoz}

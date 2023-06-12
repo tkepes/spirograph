@@ -314,6 +314,7 @@ ADAPTIVE_RATE = True
 BACKGROUND = (0, 0, 0)  # (31, 0, 10)  # (127, 0, 31)
 sect_fact = 4
 base_sect_fact = 4
+base_rad_sect_fact = 4
 POINTS = []
 COLOURS = []
 draw_rate = min(WIDTH, HEIGHT) // 20
@@ -323,8 +324,8 @@ display_params = {'Width': WIDTH, 'Height': HEIGHT, 'Line width': LINE_WIDTH, 'D
 func_names = ['sin', 'cos', 'zin', 'coz']
 coeff_names = ['A', 'B', 'a', 'c', 'b', 'd']
 coeff_labels = {key: key for key in coeff_names}
-coeff_labels['b'] = '\phi'
-coeff_labels['d'] = '\psi'
+coeff_labels['b'] = 'b'
+coeff_labels['d'] = 'd'
 col_setter = lambda text, col='red': f':{col}[{text}]'
 my_cols = {'red': (255, 0, 0), 'green': (0, 255, 0), 'blue': (0, 0, 255), 'yellow': (255, 255, 0), 'black': (0, 0, 0),
            'white': (255, 255, 255)}
@@ -341,6 +342,9 @@ par_cols['a'] = lambda text: col_setter(text, col='red')
 par_cols['c'] = lambda text: col_setter(text, col='red')
 par_cols['b'] = lambda text: col_setter(text, col=coeff_cols['b'])
 par_cols['d'] = lambda text: col_setter(text, col=coeff_cols['d'])
+curve_cols = {'base': 'red', 'curls': 'blue', 'rad': 'green'}
+test_line_lengths=False
+curvature_test=False
 base_x = 'cos'
 base_y = 'sin'
 curls_x = 'cos'
@@ -373,7 +377,7 @@ rad_ratio, speed = 1 * 2 * (base_a + base_c), round(base_per // 2 * (speed // 1)
 # rad_ratio, speed = 1 * 2 * (base_a + base_c), 3 * min((base_a + base_c), lm) + .12
 # speed = 150.05
 outer_params = {'R div r': rad_ratio, 'speed': speed}  # , 'C': C, 'q': q}
-q = 0.  # 20
+q = 0  # 20
 C = .5  # .85
 radius_curve_coeffs = {'C': C, 'q': q, 'b': 0.}  # np.pi / 2}
 curls_A, curs_B = 1, 1
